@@ -4,7 +4,7 @@ import * as socket from './framework/model/socket.js';
 import * as Players from './model/players.js';
 const proto = (window.location.protocol === 'http:') ? 'ws://' : 'wss://';
 export const serverURL = `${proto}${window.location.host}:8000`;
-socket.initialize('wss://dice-socket-server.deno.dev');
+socket.initialize('wss://rtc-signal-server.deno.dev');
 socket.when(socket.topic.SetID, (data) => {
     const name = 'Player';
     const hiddenButton = document.getElementById('hidden-button');
