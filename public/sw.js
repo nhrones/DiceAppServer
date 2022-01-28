@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dice-cache-v1';
+const CACHE_NAME = 'dice-cache-v2';
 const _urlsToCache = ['/'];
 
 self.addEventListener('install', function (event) {
