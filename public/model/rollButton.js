@@ -1,18 +1,15 @@
-import * as events from '../framework/model/events.js';
-import { thisPlayer, } from './players.js';
+import { ON, Event, Fire } from '../framework/model/events.js';
 import * as dice from './dice.js';
-import * as socket from '../framework/model/socket.js';
-const { topic: _, broadcast: fireEvent, } = events;
+import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 const kind = 'rollbutton';
 export const state = { text: '', color: '', enabled: true };
 export const init = () => {
-    events.when(`${_.ButtonTouched}${kind}`, () => {
+    ON(`${Event.ButtonTouched}${kind}`, () => {
         dice.roll(null);
-        socket.broadcast({ topic: socket.topic.UpdateRoll,
-            data: { id: thisPlayer.id, dice: dice.toString() } });
+        socketSend(message.UpdateRoll, { dice: dice.toString() });
         updateRollState();
     });
-    socket.when(socket.topic.UpdateRoll, (data) => {
+    onSocketRecieved(message.UpdateRoll, (data) => {
         dice.roll(JSON.parse(data.dice));
         updateRollState();
     });
@@ -36,5 +33,5 @@ const updateRollState = () => {
     update();
 };
 export const update = () => {
-    fireEvent(_.UpdateButton + kind, state);
+    Fire(Event.UpdateButton + kind, state);
 };

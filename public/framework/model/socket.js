@@ -1,7 +1,6 @@
 import * as main from './webRTC.js';
 import { DEBUG } from '../../types.js';
-import * as events from '../model/events.js';
-const { topic: _, broadcast: fireEvent, } = events;
+import { Event, Fire } from '../model/events.js';
 const subscriptions = new Map();
 export let socket = null;
 export const initialize = (serverURL) => {
@@ -30,7 +29,7 @@ export const initialize = (serverURL) => {
     socket.addEventListener('error', (err) => {
         if (DEBUG)
             console.error('Socket.error!', err);
-        fireEvent(_.ShowPopup, { message: `Game Full! Please close tab!` });
+        Fire(Event.ShowPopup, { message: `Game Full! Please close tab!` });
     });
     if (DEBUG)
         console.log(`connected to: ${serverURL}`);
@@ -40,10 +39,7 @@ export const initialize = (serverURL) => {
     });
 };
 export const registerPlayer = (id, name) => {
-    broadcast({
-        topic: topic.RegisterPlayer,
-        data: { id: id, name: name }
-    });
+    socketSend(message.RegisterPlayer, { id: id, name: name });
 };
 export const dispatch = (topic, data) => {
     if (subscriptions.has(topic)) {
@@ -55,15 +51,15 @@ export const dispatch = (topic, data) => {
         }
     }
 };
-export const when = (topic, listener) => {
+export const onSocketRecieved = (topic, listener) => {
     if (!subscriptions.has(topic)) {
         subscriptions.set(topic, []);
     }
     const callbacks = subscriptions.get(topic);
     callbacks.push(listener);
 };
-export const broadcast = (message) => {
-    const msg = JSON.stringify(message);
+export const socketSend = (topic, data) => {
+    const msg = JSON.stringify({ topic: topic, data: data });
     if (main.dataChannel && main.dataChannel.readyState === 'open') {
         console.log('broadcast on DataChannel:', msg);
         main.dataChannel.send(msg);
@@ -76,7 +72,7 @@ export const broadcast = (message) => {
         console.error('No place to send:', msg);
     }
 };
-export const topic = {
+export const message = {
     RegisterPlayer: 'RegisterPlayer',
     RemovePlayer: 'RemovePlayer',
     ResetGame: 'ResetGame',

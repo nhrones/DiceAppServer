@@ -1,10 +1,8 @@
-import * as events from '../framework/model/events.js';
-import { thisPlayer } from '../model/players.js';
+import { ON, Event, Fire } from '../framework/model/events.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as evaluator from './diceEvaluator.js';
 import { game } from './diceGame.js';
-import * as socket from '../framework/model/socket.js';
-const { topic: _, broadcast: fireEvent, } = events;
+import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 export let rollCount = 0;
 export let isFiveOfaKind = false;
 export let fiveOfaKindCount = 0;
@@ -34,17 +32,17 @@ export const setfiveOfaKindCount = (val) => {
     fiveOfaKindCount = val;
 };
 export const init = () => {
-    events.when(_.DieTouched, (data) => {
+    ON(Event.DieTouched, (data) => {
         const { index } = data;
         const thisDie = die[index];
         if (thisDie.value > 0) {
             thisDie.frozen = !thisDie.frozen;
             updateView(index, thisDie.value, thisDie.frozen);
             PlaySound.Select();
-            socket.broadcast({ topic: socket.topic.UpdateDie, data: { dieNumber: index, AppID: thisPlayer.id } });
+            socketSend(message.UpdateDie, { dieNumber: index });
         }
     });
-    socket.when(socket.topic.UpdateDie, (data) => {
+    onSocketRecieved(message.UpdateDie, (data) => {
         const d = die[data.dieNumber];
         if (d.value > 0) {
             d.frozen = !d.frozen;
@@ -91,7 +89,7 @@ export const roll = (dieValues) => {
     game.evaluatePossibleScores();
 };
 const updateView = (index, value, frozen) => {
-    fireEvent(_.UpdateDie + index, { value: value, frozen: frozen });
+    Fire(Event.UpdateDie + index, { value: value, frozen: frozen });
 };
 export const toString = () => {
     let str = '[';

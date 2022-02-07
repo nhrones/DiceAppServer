@@ -2,7 +2,7 @@ import { currentPlayer, thisPlayer } from '../../model/players.js';
 import * as events from '../model/events.js';
 import { container, ctx } from '../../view/container.js';
 import * as viewElements from './viewElements.js';
-const { topic: _, broadcast: fireEvent, } = events;
+const { Event: _, Fire: fireEvent, } = events;
 let x = 0;
 let y = 0;
 let boundingRect = null;
@@ -61,7 +61,7 @@ function handleClickOrTouch(mX, mY) {
         for (const element of viewElements.activeNodes) {
             if (!hit) {
                 if (ctx.isPointInPath(element.path, x, y)) {
-                    element.touched(true, x, y);
+                    element.touched();
                     hit = true;
                     if (!(element.name === 'player0textInput')) {
                         fireEvent(_.CancelEdits, {});

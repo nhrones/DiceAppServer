@@ -1,6 +1,5 @@
-import * as events from '../framework/model/events.js';
 import { container, ctx } from './container.js';
-const { topic: _, broadcast: fireEvent, } = events;
+import { ON, Event, Fire } from '../framework/model/events.js';
 export default class ScoreButton {
     constructor(index, name, geometry, isLeftHanded, text) {
         this.id = 0;
@@ -30,7 +29,7 @@ export default class ScoreButton {
         this.isLeftHanded = isLeftHanded;
         this.upperText = text.split(' ')[0];
         this.lowerText = text.split(' ')[1] || '';
-        events.when(_.UpdateScoreElement + this.index, (data) => {
+        ON(Event.UpdateScoreElement + this.index, (data) => {
             if (data.renderAll) {
                 this.color = data.color;
                 this.render();
@@ -40,11 +39,11 @@ export default class ScoreButton {
             this.renderScore(data.valueString, data.available);
         });
     }
-    touched(_broadcast, _x, _y) {
-        fireEvent(_.ScoreButtonTouched + this.index, {});
+    touched() {
+        Fire(Event.ScoreButtonTouched + this.index, {});
     }
     update() {
-        fireEvent(_.UpdateTooltip + this.index, { hovered: this.hovered });
+        Fire(Event.UpdateTooltip + this.index, { hovered: this.hovered });
         this.render();
         this.renderScore(this.scoreText, this.available);
     }

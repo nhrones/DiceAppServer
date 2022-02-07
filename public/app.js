@@ -5,7 +5,7 @@ import * as Players from './model/players.js';
 const proto = (window.location.protocol === 'http:') ? 'ws://' : 'wss://';
 export const serverURL = `${proto}${window.location.host}:8000`;
 socket.initialize('wss://rtc-signal-server.deno.dev');
-socket.when(socket.topic.SetID, (data) => {
+socket.onSocketRecieved(socket.message.SetID, (data) => {
     const name = 'Player';
     const hiddenButton = document.getElementById('hidden-button');
     hiddenButton.hidden = true;
@@ -23,7 +23,7 @@ socket.when(socket.topic.SetID, (data) => {
         game.resetGame();
     }
 });
-socket.when(socket.topic.GameFull, () => {
+socket.onSocketRecieved(socket.message.GameFull, () => {
     const msg = `Sorry, This game is already full!
 This tab/window will automatically close!`;
     console.log(msg);

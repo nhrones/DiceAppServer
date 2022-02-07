@@ -1,6 +1,5 @@
-import * as events from '../model/events.js';
+import { Event, Fire } from '../model/events.js';
 import { container } from '../../view/container.js';
-const { topic: _, broadcast: fireEvent, } = events;
 export const nodes = new Set();
 export const activeNodes = new Set();
 export const add = (view) => {
@@ -8,7 +7,7 @@ export const add = (view) => {
     if (!("undefined" === typeof (view["hovered"]))) {
         activeNodes.add(view);
     }
-    fireEvent(_.ViewWasAdded, {
+    Fire(Event.ViewWasAdded, {
         type: view.constructor.name,
         index: view.index,
         name: view.name

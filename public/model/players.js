@@ -1,6 +1,5 @@
-import * as events from '../framework/model/events.js';
-import * as WS from '../framework/model/socket.js';
-const { topic: _, broadcast: fireEvent, } = events;
+import { Event, Fire } from '../framework/model/events.js';
+import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -17,14 +16,14 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    WS.when(WS.topic.RegisterPlayer, (data) => {
+    onSocketRecieved(message.RegisterPlayer, (data) => {
         console.log(`WS.RegisterPlayer ${data.id}  ${data.name}`);
         addPlayer(data.id, data.name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        WS.broadcast({ topic: WS.topic.UpdatePlayers, data: Array.from(players.values()) });
+        socketSend(message.UpdatePlayers, Array.from(players.values()));
     });
-    WS.when(WS.topic.UpdatePlayers, (playersArray) => {
+    onSocketRecieved(message.UpdatePlayers, (playersArray) => {
         players.clear();
         resetScoreLabels();
         playersArray.forEach((newPlayer, index) => {
@@ -44,7 +43,7 @@ export const init = (thisgame, color) => {
         setCurrentPlayer([...players][0]);
         game.resetGame();
     });
-    WS.when(WS.topic.RemovePlayer, (data) => {
+    onSocketRecieved(message.RemovePlayer, (data) => {
         removePlayer(data.id);
         game.resetGame();
     });
@@ -66,7 +65,7 @@ export const addScore = (player, value) => {
     updatePlayer(player.idx, player.color, text);
 };
 const updatePlayer = (index, color, text) => {
-    fireEvent(`${_.UpdateLabel}player${index}`, {
+    Fire(`${Event.UpdateLabel}player${index}`, {
         color: thisColor,
         textColor: color, text: text
     });

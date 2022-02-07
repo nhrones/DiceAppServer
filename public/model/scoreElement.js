@@ -1,10 +1,9 @@
-import * as events from '../framework/model/events.js';
+import { ON, Event, Fire } from '../framework/model/events.js';
 import { currentPlayer, thisPlayer } from './players.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as dice from './dice.js';
 import * as Possible from './possible.js';
-import * as socket from '../framework/model/socket.js';
-const { topic: _, broadcast: fireEvent, } = events;
+import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 const SmallStraight = 8;
 const LargeStraight = 9;
 const FullHouse = 10;
@@ -23,18 +22,17 @@ export default class ScoreElement {
         this.finalValue = 0;
         this.possibleValue = 0;
         this.scoringDieset = [0, 0, 0, 0, 0];
-        events.when(`${_.ScoreButtonTouched}${this.index}`, () => {
-            socket.broadcast({ topic: `${socket.topic.UpdateScore}${this.index}`,
-                data: { id: thisPlayer.id, scoreNumber: this.index } });
+        ON(`${Event.ScoreButtonTouched}${this.index}`, () => {
+            socketSend(`${message.UpdateScore}${this.index}`, {});
             if (this.clicked()) {
-                socket.broadcast({ topic: socket.topic.ResetTurn, data: {} });
-                fireEvent(_.ScoreElementResetTurn, {});
+                socketSend(message.ResetTurn, {});
+                Fire(Event.ScoreElementResetTurn, {});
             }
         });
-        socket.when(`${socket.topic.UpdateScore}${this.index}`, (_data) => {
+        onSocketRecieved(`${message.UpdateScore}${this.index}`, () => {
             this.clicked();
         });
-        events.when(_.UpdateTooltip + this.index, (data) => {
+        ON(Event.UpdateTooltip + this.index, (data) => {
             let msg = '';
             let thisState = 0;
             if (data.hovered) {
@@ -51,7 +49,7 @@ export default class ScoreElement {
                 thisState = 3;
                 msg = '';
             }
-            fireEvent(_.UpdateLabel + infolabel, {
+            Fire(Event.UpdateLabel + infolabel, {
                 state: thisState,
                 color: snow,
                 textColor: black,
@@ -60,7 +58,7 @@ export default class ScoreElement {
         });
     }
     updateInfo(text) {
-        fireEvent(_.UpdateLabel + infolabel, { state: 0, color: snow, textColor: black, text: text });
+        Fire(Event.UpdateLabel + infolabel, { state: 0, color: snow, textColor: black, text: text });
     }
     setOwned(value) {
         this.owned = value;
@@ -74,7 +72,7 @@ export default class ScoreElement {
         }
     }
     renderValue(value) {
-        fireEvent(_.UpdateScoreElement + this.index, {
+        Fire(Event.UpdateScoreElement + this.index, {
             renderAll: false,
             color: '',
             valueString: value,
@@ -82,7 +80,7 @@ export default class ScoreElement {
         });
     }
     updateScoreElement(color, value) {
-        fireEvent(_.UpdateScoreElement + this.index, {
+        Fire(Event.UpdateScoreElement + this.index, {
             renderAll: true,
             color: color,
             valueString: value,

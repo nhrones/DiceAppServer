@@ -1,7 +1,6 @@
-import * as events from '../framework/model/events.js';
+import { ON, Event } from '../framework/model/events.js';
 import { LabelState } from '../types.js';
 import { container, ctx } from './container.js';
-const { topic: _, broadcast: fireEvent, } = events;
 export default class Label {
     constructor(index, name, text, geometry, fillColor, bind) {
         this.id = 0;
@@ -23,7 +22,7 @@ export default class Label {
         this.textLeft = this.geometry.left - (this.geometry.width * 0.5);
         this.textTop = this.geometry.top - (this.geometry.height * 0.7);
         if (bind) {
-            events.when(_.UpdateLabel + this.name, (data) => {
+            ON(Event.UpdateLabel + this.name, (data) => {
                 this.fillColor = data.color;
                 this.fontColor = data.textColor;
                 if (data.state === LabelState.Reset) {
@@ -55,6 +54,6 @@ export default class Label {
         ctx.fillText(this.text, this.geometry.left, this.geometry.top);
         ctx.strokeText(this.text, this.geometry.left, this.geometry.top);
     }
-    touched(_broadcast, _x, _y) {
+    touched() {
     }
 }

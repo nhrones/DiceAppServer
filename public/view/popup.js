@@ -1,8 +1,7 @@
-import * as events from '../framework/model/events.js';
 import { container, ctx } from './container.js';
 import * as socket from '../framework/model/socket.js';
-const { topic: soc } = socket;
-const { topic: _, broadcast: fireEvent, } = events;
+const { message: soc } = socket;
+import { ON, Event, Fire } from '../framework/model/events.js';
 let left = 1;
 let top = 1;
 export default class Popup {
@@ -26,13 +25,13 @@ export default class Popup {
         this.hiddenPath.rect(1, 1, 1, 1);
         this.geometry = geometry;
         this.path = this.hiddenPath;
-        events.when(_.ShowPopup, (data) => {
+        ON(Event.ShowPopup, (data) => {
             this.show(data.message);
         });
-        socket.when(soc.ShowPopup, (data) => {
+        socket.onSocketRecieved(soc.ShowPopup, (data) => {
             this.show(data.message);
         });
-        events.when(_.HidePopup, () => {
+        ON(Event.HidePopup, () => {
             this.hide();
         });
     }
@@ -64,9 +63,9 @@ export default class Popup {
             return ctx.putImageData(this.buffer, 0, 0);
         }
     }
-    touched(_broadcast, _x, _y) {
+    touched() {
         this.hide();
-        fireEvent(_.PopupResetGame, {});
+        Fire(Event.PopupResetGame, {});
     }
     update() {
         if (this.visible)

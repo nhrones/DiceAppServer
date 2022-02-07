@@ -1,10 +1,10 @@
-import * as socket from './socket.js';
+import { onSocketRecieved, socketSend } from './socket.js';
 import { DEBUG } from '../../types.js';
 import { dispatch } from './socket.js';
 export let peerConnection;
 export let dataChannel;
 export const initialize = () => {
-    socket.when('RtcOffer', async (offer) => {
+    onSocketRecieved('RtcOffer', async (offer) => {
         if (peerConnection) {
             if (DEBUG)
                 console.error('existing peerconnection');
@@ -13,10 +13,10 @@ export const initialize = () => {
         createPeerConnection(false);
         await peerConnection.setRemoteDescription(offer);
         const answer = await peerConnection.createAnswer();
-        socket.broadcast({ topic: 'RtcAnswer', data: { type: 'answer', sdp: answer.sdp } });
+        socketSend('RtcAnswer', { type: 'answer', sdp: answer.sdp });
         await peerConnection.setLocalDescription(answer);
     });
-    socket.when('RtcAnswer', async (answer) => {
+    onSocketRecieved('RtcAnswer', async (answer) => {
         if (!peerConnection) {
             if (DEBUG)
                 console.error('no peerconnection');
@@ -24,7 +24,7 @@ export const initialize = () => {
         }
         await peerConnection.setRemoteDescription(answer);
     });
-    socket.when('candidate', async (candidate) => {
+    onSocketRecieved('candidate', async (candidate) => {
         if (!peerConnection) {
             if (DEBUG)
                 console.error('no peerconnection');
@@ -37,13 +37,13 @@ export const initialize = () => {
             await peerConnection.addIceCandidate(candidate);
         }
     });
-    socket.when('bye', () => {
+    onSocketRecieved('bye', () => {
         if (peerConnection) {
             peerConnection.close();
             peerConnection = null;
         }
     });
-    socket.when('connectOffer', (_data) => {
+    onSocketRecieved('connectOffer', (_data) => {
         if (peerConnection) {
             if (DEBUG)
                 console.log(`Already connected with Player2, ignoring 'connectOffer'!`);
@@ -55,7 +55,7 @@ export const initialize = () => {
     });
 };
 export const start = () => {
-    socket.broadcast({ topic: 'connectOffer', data: {} });
+    socketSend('connectOffer', {});
 };
 const reset = () => {
     dataChannel = null;
@@ -84,7 +84,7 @@ function createPeerConnection(isOfferer) {
             init.sdpMid = event.candidate.sdpMid;
             init.sdpMLineIndex = event.candidate.sdpMLineIndex;
         }
-        socket.broadcast({ topic: 'candidate', data: init });
+        socketSend('candidate', init);
     };
     if (isOfferer) {
         if (DEBUG)
@@ -125,7 +125,7 @@ Waiting for new offer on: ${location.origin}`, clearContent: true
 export async function makeConnection() {
     createPeerConnection(true);
     const offer = await peerConnection.createOffer();
-    socket.broadcast({ topic: 'RtcOffer', data: { type: 'offer', sdp: offer.sdp } });
+    socketSend('RtcOffer', { type: 'offer', sdp: offer.sdp });
     await peerConnection.setLocalDescription(offer);
 }
 updateUI({ content: `Player1 is waiting for a connection from: ${location.origin}` });

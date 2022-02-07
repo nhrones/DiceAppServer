@@ -1,7 +1,6 @@
-import * as events from '../framework/model/events.js';
+import { ON, Event, Fire } from '../framework/model/events.js';
 import { container, ctx } from './container.js';
 import Label from './label.js';
-const { topic: _, broadcast: fireEvent, } = events;
 export default class Button {
     constructor(name, text, geometry, path) {
         this.id = 0;
@@ -27,18 +26,16 @@ export default class Button {
         }, 'blue', true);
         this.path = path;
         this.render();
-        events.when(_.UpdateButton + this.name, (data) => {
+        ON(Event.UpdateButton + this.name, (data) => {
             this.enabled = data.enabled;
             this.color = data.color;
             this.text = data.text;
             this.render();
         });
     }
-    touched(broadcast, _x, _y) {
+    touched() {
         if (this.enabled) {
-            if (broadcast) {
-                fireEvent(_.ButtonTouched + this.name, {});
-            }
+            Fire(Event.ButtonTouched + this.name, {});
         }
     }
     update() {

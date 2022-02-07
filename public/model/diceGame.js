@@ -1,12 +1,11 @@
-import * as socket from '../framework/model/socket.js';
-import * as events from '../framework/model/events.js';
+import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
+import { ON, Event, Fire } from '../framework/model/events.js';
 import * as Players from '../model/players.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as dice from './dice.js';
 import * as Possible from './possible.js';
 import ScoreElement from './scoreElement.js';
 import * as rollButton from './rollButton.js';
-const { topic: _, broadcast: fireEvent, } = events;
 const snowColor = 'snow';
 const grayColor = 'gray';
 export let game;
@@ -21,19 +20,19 @@ export class DiceGame {
         this.rightTotal = 0;
         dice.init();
         rollButton.init();
-        socket.when(socket.topic.ResetTurn, (_data) => {
+        onSocketRecieved(message.ResetTurn, (_data) => {
             if (!this.isGameComplete()) {
                 this.resetTurn();
             }
         });
-        socket.when(socket.topic.ResetGame, (data) => {
+        onSocketRecieved(message.ResetGame, (data) => {
             this.resetGame();
         });
-        events.when(_.PopupResetGame, () => {
-            socket.broadcast({ topic: socket.topic.ResetGame, data: {} });
+        ON(Event.PopupResetGame, () => {
+            socketSend(message.ResetGame, {});
             this.resetGame();
         });
-        events.when(_.ScoreElementResetTurn, () => {
+        ON(Event.ScoreElementResetTurn, () => {
             if (this.isGameComplete()) {
                 this.clearPossibleScores();
                 this.setLeftScores();
@@ -44,7 +43,7 @@ export class DiceGame {
                 this.resetTurn();
             }
         });
-        events.when(_.ViewWasAdded, (view) => {
+        ON(Event.ViewWasAdded, (view) => {
             if (view.type === 'ScoreButton') {
                 this.scoreItems.push(new ScoreElement(view.index, view.name));
             }
@@ -94,7 +93,7 @@ export class DiceGame {
     }
     resetGame() {
         document.title = Players.thisPlayer.playerName;
-        fireEvent(_.HidePopup, {});
+        Fire(Event.HidePopup, {});
         Players.setCurrentPlayer(this.getPlayer(0));
         dice.resetGame();
         for (const scoreItem of this.scoreItems) {
@@ -105,7 +104,7 @@ export class DiceGame {
         this.fiveOkindBonus = 0;
         this.leftTotal = 0;
         this.rightTotal = 0;
-        fireEvent(_.UpdateLabel + 'leftscore', { state: 0, color: 'gray', textColor: snowColor, text: '^ total = 0' });
+        Fire(Event.UpdateLabel + 'leftscore', { state: 0, color: 'gray', textColor: snowColor, text: '^ total = 0' });
         Players.resetPlayers();
         rollButton.state.color = 'brown';
         rollButton.state.text = 'Roll Dice';
@@ -125,10 +124,9 @@ export class DiceGame {
         rollButton.state.color = 'black';
         rollButton.state.text = winMsg;
         rollButton.update();
-        fireEvent(_.UpdateLabel + 'infolabel', { state: 0, color: 'snow', textColor: 'black', text: winMsg + ' ' + winner.score });
-        fireEvent(_.ShowPopup, { message: winMsg + ' ' + winner.score });
-        socket.broadcast({ topic: socket.topic.ShowPopup,
-            data: { message: winner.playerName + ' wins!' + ' ' + winner.score } });
+        Fire(Event.UpdateLabel + 'infolabel', { state: 0, color: 'snow', textColor: 'black', text: winMsg + ' ' + winner.score });
+        Fire(Event.ShowPopup, { message: winMsg + ' ' + winner.score });
+        socketSend(message.ShowPopup, { message: winner.playerName + ' wins!' + ' ' + winner.score });
     }
     isGameComplete() {
         let result = true;
@@ -168,7 +166,7 @@ export class DiceGame {
                 }
             }
             Players.addScore(bonusWinner, 35);
-            fireEvent(_.UpdateLabel + 'leftscore', {
+            Fire(Event.UpdateLabel + 'leftscore', {
                 state: 0,
                 color: bonusWinner.color,
                 textColor: snowColor,
@@ -176,7 +174,7 @@ export class DiceGame {
             });
         }
         else {
-            fireEvent(_.UpdateLabel + 'leftscore', {
+            Fire(Event.UpdateLabel + 'leftscore', {
                 state: 0,
                 color: grayColor,
                 textColor: snowColor,
@@ -184,7 +182,7 @@ export class DiceGame {
             });
         }
         if (this.leftTotal === 0) {
-            fireEvent(_.UpdateLabel + 'leftscore', {
+            Fire(Event.UpdateLabel + 'leftscore', {
                 state: 0,
                 color: grayColor,
                 textColor: snowColor,

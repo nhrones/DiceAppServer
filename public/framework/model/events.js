@@ -1,5 +1,5 @@
 const topicSubscriptions = new Map();
-export const when = (topic, callback) => {
+export const ON = (topic, callback) => {
     return _registerListener(topic, callback);
 };
 const _registerListener = (topic, callback) => {
@@ -18,7 +18,7 @@ const _registerListener = (topic, callback) => {
         }
     };
 };
-export const broadcast = (topic, data) => {
+export const Fire = (topic, data) => {
     if (topicSubscriptions.has(topic)) {
         _dispatch(topicSubscriptions.get(topic), data);
     }
@@ -30,13 +30,7 @@ const _dispatch = (subscriptions, data) => {
         }
     }
 };
-const reset = () => {
-    topicSubscriptions.clear();
-};
-const removeTopic = (topic) => {
-    topicSubscriptions.delete(topic);
-};
-export const topic = {
+export const Event = {
     ButtonTouched: 'ButtonTouched',
     CancelEdits: 'CancelEdits',
     DieTouched: 'DieTouched',

@@ -1,6 +1,5 @@
-import * as events from '../framework/model/events.js';
+import { ON, Event, Fire } from '../framework/model/events.js';
 import { ctx } from './container.js';
-const { topic: _, broadcast: fireEvent, } = events;
 export default class Die {
     constructor(index, name, geometry, path) {
         this.id = 0;
@@ -19,14 +18,14 @@ export default class Die {
         this.color = 'transparent';
         this.path = path;
         this.render({ value: 0, frozen: false });
-        events.when(_.UpdateDie + this.index, (state) => {
+        ON(Event.UpdateDie + this.index, (state) => {
             this.frozen = state.frozen;
             this.value = state.value;
             this.render(state);
         });
     }
-    touched(_broadcast, _x, _y) {
-        fireEvent(_.DieTouched, { index: this.index.toString() });
+    touched() {
+        Fire(Event.DieTouched, { index: this.index.toString() });
     }
     update() {
         this.render({ frozen: this.frozen, value: this.value });
