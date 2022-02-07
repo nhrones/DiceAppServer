@@ -1,6 +1,6 @@
-import * as main from './webRTC.js';
+import { Event, Fire } from './events.js';
+import * as webRTC from './webRTC.js';
 import { DEBUG } from '../../types.js';
-import { Event, Fire } from '../model/events.js';
 const subscriptions = new Map();
 export let socket = null;
 export const initialize = (serverURL) => {
@@ -17,8 +17,8 @@ export const initialize = (serverURL) => {
     socket.onopen = () => {
         if (DEBUG)
             console.log('signalling.socket.opened!');
-        main.initialize();
-        main.start();
+        webRTC.initialize();
+        webRTC.start();
     };
     socket.onclose = (ev) => {
         const { code, reason, wasClean } = ev;
@@ -39,7 +39,7 @@ export const initialize = (serverURL) => {
     });
 };
 export const registerPlayer = (id, name) => {
-    socketSend(message.RegisterPlayer, { id: id, name: name });
+    sendSignal(message.RegisterPlayer, { id: id, name: name });
 };
 export const dispatch = (topic, data) => {
     if (subscriptions.has(topic)) {
@@ -51,18 +51,18 @@ export const dispatch = (topic, data) => {
         }
     }
 };
-export const onSocketRecieved = (topic, listener) => {
+export const onSignalRecieved = (topic, listener) => {
     if (!subscriptions.has(topic)) {
         subscriptions.set(topic, []);
     }
     const callbacks = subscriptions.get(topic);
     callbacks.push(listener);
 };
-export const socketSend = (topic, data) => {
+export const sendSignal = (topic, data) => {
     const msg = JSON.stringify({ topic: topic, data: data });
-    if (main.dataChannel && main.dataChannel.readyState === 'open') {
+    if (webRTC.dataChannel && webRTC.dataChannel.readyState === 'open') {
         console.log('broadcast on DataChannel:', msg);
-        main.dataChannel.send(msg);
+        webRTC.dataChannel.send(msg);
     }
     else if (socket) {
         console.log('broadcast on WebSocket:', msg);
@@ -84,9 +84,9 @@ export const message = {
     UpdatePlayers: 'UpdatePlayers',
     SetID: "SetID",
     GameFull: "GameFull",
-    bye: 'bye',
+    Bye: 'bye',
     RtcOffer: 'RtcOffer',
     RtcAnswer: 'RtcAnswer',
-    candidate: 'candidate',
-    connectOffer: 'connectOffer'
+    IceCandidate: 'candidate',
+    ConnectOffer: 'connectOffer'
 };

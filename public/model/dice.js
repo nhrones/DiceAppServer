@@ -1,8 +1,8 @@
+import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as evaluator from './diceEvaluator.js';
 import { game } from './diceGame.js';
-import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 export let rollCount = 0;
 export let isFiveOfaKind = false;
 export let fiveOfaKindCount = 0;
@@ -39,10 +39,10 @@ export const init = () => {
             thisDie.frozen = !thisDie.frozen;
             updateView(index, thisDie.value, thisDie.frozen);
             PlaySound.Select();
-            socketSend(message.UpdateDie, { dieNumber: index });
+            sendSignal(message.UpdateDie, { dieNumber: index });
         }
     });
-    onSocketRecieved(message.UpdateDie, (data) => {
+    onSignalRecieved(message.UpdateDie, (data) => {
         const d = die[data.dieNumber];
         if (d.value > 0) {
             d.frozen = !d.frozen;

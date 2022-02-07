@@ -1,15 +1,15 @@
+import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import * as dice from './dice.js';
-import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 const kind = 'rollbutton';
 export const state = { text: '', color: '', enabled: true };
 export const init = () => {
     ON(`${Event.ButtonTouched}${kind}`, () => {
         dice.roll(null);
-        socketSend(message.UpdateRoll, { dice: dice.toString() });
+        sendSignal(message.UpdateRoll, { dice: dice.toString() });
         updateRollState();
     });
-    onSocketRecieved(message.UpdateRoll, (data) => {
+    onSignalRecieved(message.UpdateRoll, (data) => {
         dice.roll(JSON.parse(data.dice));
         updateRollState();
     });

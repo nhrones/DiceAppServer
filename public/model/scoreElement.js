@@ -1,9 +1,9 @@
+import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import { currentPlayer, thisPlayer } from './players.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as dice from './dice.js';
 import * as Possible from './possible.js';
-import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 const SmallStraight = 8;
 const LargeStraight = 9;
 const FullHouse = 10;
@@ -23,13 +23,13 @@ export default class ScoreElement {
         this.possibleValue = 0;
         this.scoringDieset = [0, 0, 0, 0, 0];
         ON(`${Event.ScoreButtonTouched}${this.index}`, () => {
-            socketSend(`${message.UpdateScore}${this.index}`, {});
+            sendSignal(`${message.UpdateScore}${this.index}`, {});
             if (this.clicked()) {
-                socketSend(message.ResetTurn, {});
+                sendSignal(message.ResetTurn, {});
                 Fire(Event.ScoreElementResetTurn, {});
             }
         });
-        onSocketRecieved(`${message.UpdateScore}${this.index}`, () => {
+        onSignalRecieved(`${message.UpdateScore}${this.index}`, () => {
             this.clicked();
         });
         ON(Event.UpdateTooltip + this.index, (data) => {

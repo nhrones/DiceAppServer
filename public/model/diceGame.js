@@ -1,4 +1,4 @@
-import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
+import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import * as Players from '../model/players.js';
 import * as PlaySound from '../framework/model/sounds.js';
@@ -20,16 +20,16 @@ export class DiceGame {
         this.rightTotal = 0;
         dice.init();
         rollButton.init();
-        onSocketRecieved(message.ResetTurn, (_data) => {
+        onSignalRecieved(message.ResetTurn, (_data) => {
             if (!this.isGameComplete()) {
                 this.resetTurn();
             }
         });
-        onSocketRecieved(message.ResetGame, (data) => {
+        onSignalRecieved(message.ResetGame, (data) => {
             this.resetGame();
         });
         ON(Event.PopupResetGame, () => {
-            socketSend(message.ResetGame, {});
+            sendSignal(message.ResetGame, {});
             this.resetGame();
         });
         ON(Event.ScoreElementResetTurn, () => {
@@ -126,7 +126,7 @@ export class DiceGame {
         rollButton.update();
         Fire(Event.UpdateLabel + 'infolabel', { state: 0, color: 'snow', textColor: 'black', text: winMsg + ' ' + winner.score });
         Fire(Event.ShowPopup, { message: winMsg + ' ' + winner.score });
-        socketSend(message.ShowPopup, { message: winner.playerName + ' wins!' + ' ' + winner.score });
+        sendSignal(message.ShowPopup, { message: winner.playerName + ' wins!' + ' ' + winner.score });
     }
     isGameComplete() {
         let result = true;

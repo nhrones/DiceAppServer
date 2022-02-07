@@ -1,5 +1,5 @@
+import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
 import { Event, Fire } from '../framework/model/events.js';
-import { onSocketRecieved, message, socketSend } from '../framework/model/socket.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -16,14 +16,14 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    onSocketRecieved(message.RegisterPlayer, (data) => {
+    onSignalRecieved(message.RegisterPlayer, (data) => {
         console.log(`WS.RegisterPlayer ${data.id}  ${data.name}`);
         addPlayer(data.id, data.name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        socketSend(message.UpdatePlayers, Array.from(players.values()));
+        sendSignal(message.UpdatePlayers, Array.from(players.values()));
     });
-    onSocketRecieved(message.UpdatePlayers, (playersArray) => {
+    onSignalRecieved(message.UpdatePlayers, (playersArray) => {
         players.clear();
         resetScoreLabels();
         playersArray.forEach((newPlayer, index) => {
@@ -43,7 +43,7 @@ export const init = (thisgame, color) => {
         setCurrentPlayer([...players][0]);
         game.resetGame();
     });
-    onSocketRecieved(message.RemovePlayer, (data) => {
+    onSignalRecieved(message.RemovePlayer, (data) => {
         removePlayer(data.id);
         game.resetGame();
     });
