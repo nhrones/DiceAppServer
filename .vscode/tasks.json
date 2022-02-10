@@ -8,7 +8,11 @@
             "type": "shell",
             "command": "deno",
             "options": {
-                "cwd": "./"
+                "cwd": "./",
+                "env": {
+                    "DEBUG": "true", 
+                    "DENO_REGION" : "localhost"
+                },
             },
             "args": [
                 "run",

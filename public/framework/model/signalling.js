@@ -4,6 +4,8 @@ import { DEBUG } from '../../types.js';
 const subscriptions = new Map();
 export let socket = null;
 export const initialize = (serverURL) => {
+    if (DEBUG)
+        console.log('initializing socket at: ', serverURL);
     if (socket) {
         return;
     }
@@ -34,8 +36,15 @@ export const initialize = (serverURL) => {
     if (DEBUG)
         console.log(`connected to: ${serverURL}`);
     socket.addEventListener('message', (message) => {
-        const { topic, data } = JSON.parse(message.data);
-        dispatch(topic, data);
+        console.info('socket recieved message.data: ', message.data);
+        const payload = JSON.parse(message.data);
+        if (Array.isArray(payload)) {
+            console.info('socket recieved topic: ', payload[0]);
+            dispatch(payload[0], payload[1]);
+        }
+        else {
+            dispatch(payload.topic, payload.data);
+        }
     });
 };
 export const registerPlayer = (id, name) => {
@@ -59,7 +68,7 @@ export const onSignalRecieved = (topic, listener) => {
     callbacks.push(listener);
 };
 export const sendSignal = (topic, data) => {
-    const msg = JSON.stringify({ topic: topic, data: data });
+    const msg = JSON.stringify([topic, data]);
     if (webRTC.dataChannel && webRTC.dataChannel.readyState === 'open') {
         console.log('broadcast on DataChannel:', msg);
         webRTC.dataChannel.send(msg);
@@ -72,21 +81,22 @@ export const sendSignal = (topic, data) => {
         console.error('No place to send:', msg);
     }
 };
-export const message = {
-    RegisterPlayer: 'RegisterPlayer',
-    RemovePlayer: 'RemovePlayer',
-    ResetGame: 'ResetGame',
-    ResetTurn: 'ResetTurn',
-    ShowPopup: 'ShowPopup',
-    UpdateRoll: 'UpdateRoll',
-    UpdateScore: 'UpdateScore',
-    UpdateDie: 'UpdateDie',
-    UpdatePlayers: 'UpdatePlayers',
-    SetID: "SetID",
-    GameFull: "GameFull",
-    Bye: 'bye',
-    RtcOffer: 'RtcOffer',
-    RtcAnswer: 'RtcAnswer',
-    IceCandidate: 'candidate',
-    ConnectOffer: 'connectOffer'
-};
+export var message;
+(function (message) {
+    message["RegisterPlayer"] = "RegisterPlayer";
+    message["RemovePlayer"] = "RemovePlayer";
+    message["ResetGame"] = "ResetGame";
+    message["ResetTurn"] = "ResetTurn";
+    message["ShowPopup"] = "ShowPopup";
+    message["UpdateRoll"] = "UpdateRoll";
+    message["UpdateScore"] = "UpdateScore";
+    message["UpdateDie"] = "UpdateDie";
+    message["UpdatePlayers"] = "UpdatePlayers";
+    message["SetID"] = "SetID";
+    message["GameFull"] = "GameFull";
+    message["Bye"] = "bye";
+    message["RtcOffer"] = "RtcOffer";
+    message["RtcAnswer"] = "RtcAnswer";
+    message["IceCandidate"] = "candidate";
+    message["ConnectOffer"] = "connectOffer";
+})(message || (message = {}));

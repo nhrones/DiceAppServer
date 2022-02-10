@@ -106,8 +106,8 @@ function setupDataChannel() {
     dataChannel.onopen = checkDataChannelState;
     dataChannel.onclose = checkDataChannelState;
     dataChannel.addEventListener("message", (event) => {
-        const { topic, data } = JSON.parse(event.data);
-        dispatch(topic, data);
+        const payload = JSON.parse(event.data);
+        dispatch(payload[0], payload[1]);
     });
 }
 function checkDataChannelState() {
