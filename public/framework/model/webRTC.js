@@ -109,8 +109,8 @@ function setupDataChannel() {
     dataChannel.addEventListener("message", (event) => {
         const payload = JSON.parse(event.data);
         const topic = payload[0];
-        console.log(payload);
-        console.info('DataChannel recieved topic: ', message[topic]);
+        const tName = (topic > 59) ? 'UpdateScore' : message[topic];
+        console.info('DataChannel recieved topic: ', tName);
         dispatch(topic, payload[1]);
     });
 }
