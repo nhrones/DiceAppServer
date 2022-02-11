@@ -2,6 +2,7 @@ import { DiceGame, game } from './model/diceGame.js';
 import { Container, container } from './view/container.js';
 import * as socket from './framework/model/signalling.js';
 import * as Players from './model/players.js';
+import { DEBUG } from './types.js';
 const { onSignalRecieved, registerPlayer, message } = socket;
 const proto = (window.location.protocol === 'http:') ? 'ws://' : 'wss://';
 const serverURL = `${proto}${window.location.host}:8000`;
@@ -17,7 +18,8 @@ onSignalRecieved(message.SetID, (data) => {
     const hiddenButton = document.getElementById('hidden-button');
     hiddenButton.hidden = true;
     hiddenButton.addEventListener('click', function () {
-        console.log('hiddenButton was clicked');
+        if (DEBUG)
+            console.log('hiddenButton was clicked');
     }, false);
     hiddenButton.click();
     Players.thisPlayer.id = data.id;
@@ -33,7 +35,8 @@ onSignalRecieved(message.SetID, (data) => {
 onSignalRecieved(message.GameFull, () => {
     const msg = `Sorry, This game is already full!
 This tab/window will automatically close!`;
-    console.log(msg);
+    if (DEBUG)
+        console.log(msg);
     alert(msg);
     self.opener = self;
     self.close();

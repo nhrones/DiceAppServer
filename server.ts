@@ -39,7 +39,7 @@ const host = "localhost" //"192.168.0.171" //"127.0.0.1"
 const port = 80
 
 serve(handleRequest, { hostname: host, port: port });
-console.log(`Serving Client App from http://${host}:${port}`);
+if (DEBUG) console.log(`Serving Client App from http://${host}:${port}`);
 
 /** handle each new http request */
 async function handleRequest(request: Request): Promise<Response> {

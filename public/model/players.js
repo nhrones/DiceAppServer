@@ -1,6 +1,6 @@
 import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
-import { RTCopen } from './../framework/model/webRTC.js';
 import { Event, Fire } from '../framework/model/events.js';
+import { DEBUG } from '../types.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -17,9 +17,14 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    onSignalRecieved(message.RegisterPlayer, (data) => {
-        console.log(`WS.RegisterPlayer ${data.id}  ${data.name}`);
-        addPlayer(data.id, data.name);
+    onSignalRecieved(message.RegisterPlayer, (player) => {
+        if (DEBUG)
+            console.info('RegisterPlayer: ', player);
+        const id = player[0];
+        const name = player[1];
+        if (DEBUG)
+            console.log(`WS.RegisterPlayer ${id}  ${name}`);
+        addPlayer(id, name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
         sendSignal(message.UpdatePlayers, Array.from(players.values()));
@@ -44,14 +49,9 @@ export const init = (thisgame, color) => {
         setCurrentPlayer([...players][0]);
         game.resetGame();
     });
-    onSignalRecieved(message.RemovePlayer, (data) => {
-        if (!RTCopen) {
-            removePlayer(data.id);
-            game.resetGame();
-        }
-        else {
-            alert('Socket-Server-Closed!');
-        }
+    onSignalRecieved(message.RemovePlayer, (id) => {
+        removePlayer(id);
+        game.resetGame();
     });
 };
 export const resetScoreLabels = () => {
@@ -77,7 +77,8 @@ const updatePlayer = (index, color, text) => {
     });
 };
 export const addPlayer = (id, playerName) => {
-    console.log('add player ', id + '  ' + playerName);
+    if (DEBUG)
+        console.log('add player ', id + '  ' + playerName);
     if (playerName === 'Player') {
         const num = players.size + 1;
         playerName = 'Player' + num;
@@ -88,7 +89,8 @@ export const addPlayer = (id, playerName) => {
         players.add(thisPlayer);
     }
     else {
-        console.log(`Players adding, id:${id} name: ${playerName}`);
+        if (DEBUG)
+            console.log(`Players adding, id:${id} name: ${playerName}`);
         players.add({
             id: id,
             idx: players.size,
@@ -98,20 +100,20 @@ export const addPlayer = (id, playerName) => {
             lastScore: ''
         });
     }
-    console.info(' added player', Array.from(players.values()));
+    if (DEBUG)
+        console.info(' added player', Array.from(players.values()));
 };
 const removePlayer = (id) => {
     const p = getById(id);
-    console.info(' removing player', p);
+    if (DEBUG)
+        console.info(' removing player', p);
     if (p)
         players.delete(p);
     refreshPlayerColors();
     setThisPlayer([...players][0]);
-    console.info(' removed player', Array.from(players.values()));
 };
 const getById = (id) => {
     for (const player of players) {
-        console.log(`player.id: ${player.id} id: ${id}`);
         if (player.id === id) {
             return player;
         }
@@ -157,6 +159,7 @@ export let currentPlayer = {
     lastScore: ''
 };
 export const setCurrentPlayer = (player) => {
-    console.log(`settingCurrentPlayer: ${player.playerName}`);
+    if (DEBUG)
+        console.log(`settingCurrentPlayer: ${player.playerName}`);
     currentPlayer = player;
 };

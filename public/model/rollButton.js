@@ -6,11 +6,11 @@ export const state = { text: '', color: '', enabled: true };
 export const init = () => {
     ON(`${Event.ButtonTouched}${kind}`, () => {
         dice.roll(null);
-        sendSignal(message.UpdateRoll, { dice: dice.toString() });
+        sendSignal(message.UpdateRoll, dice.toString());
         updateRollState();
     });
-    onSignalRecieved(message.UpdateRoll, (data) => {
-        dice.roll(JSON.parse(data.dice));
+    onSignalRecieved(message.UpdateRoll, (diceArray) => {
+        dice.roll(JSON.parse(diceArray));
         updateRollState();
     });
 };

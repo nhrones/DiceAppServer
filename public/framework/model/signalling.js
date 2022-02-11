@@ -36,15 +36,17 @@ export const initialize = (serverURL) => {
     if (DEBUG)
         console.log(`connected to: ${serverURL}`);
     socket.addEventListener('message', (msg) => {
-        console.info('socket recieved message.data: ', msg.data);
+        if (DEBUG)
+            console.info('socket recieved message.data: ', msg.data);
         const payload = JSON.parse(msg.data);
         const topic = payload[0];
-        console.info('socket recieved topic: ', message[topic]);
+        if (DEBUG)
+            console.info('socket recieved topic: ', message[topic]);
         dispatch(topic, payload[1]);
     });
 };
 export const registerPlayer = (id, name) => {
-    sendSignal(message.RegisterPlayer, { id: id, name: name });
+    sendSignal(message.RegisterPlayer, [id, name]);
 };
 export const dispatch = (topic, data) => {
     if (subscriptions.has(topic)) {
@@ -66,15 +68,18 @@ export const onSignalRecieved = (topic, listener) => {
 export const sendSignal = (topic, data) => {
     const msg = JSON.stringify([topic, data]);
     if (webRTC.dataChannel && webRTC.dataChannel.readyState === 'open') {
-        console.log('broadcast on DataChannel:', msg);
+        if (DEBUG)
+            console.log('broadcast on DataChannel:', msg);
         webRTC.dataChannel.send(msg);
     }
     else if (socket) {
-        console.log('broadcast on WebSocket:', msg);
+        if (DEBUG)
+            console.log('broadcast on WebSocket:', msg);
         socket.send(msg);
     }
     else {
-        console.error('No place to send:', msg);
+        if (DEBUG)
+            console.error('No place to send:', msg);
     }
 };
 export var message;
