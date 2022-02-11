@@ -1,4 +1,5 @@
 import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
+import { RTCopen } from './../framework/model/webRTC.js';
 import { Event, Fire } from '../framework/model/events.js';
 const MAXPLAYERS = 2;
 let game;
@@ -44,8 +45,13 @@ export const init = (thisgame, color) => {
         game.resetGame();
     });
     onSignalRecieved(message.RemovePlayer, (data) => {
-        removePlayer(data.id);
-        game.resetGame();
+        if (!RTCopen) {
+            removePlayer(data.id);
+            game.resetGame();
+        }
+        else {
+            alert('Socket-Server-Closed!');
+        }
     });
 };
 export const resetScoreLabels = () => {

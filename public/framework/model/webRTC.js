@@ -3,6 +3,7 @@ import { DEBUG } from '../../types.js';
 import { dispatch } from './signalling.js';
 export let peerConnection;
 export let dataChannel;
+export let RTCopen = false;
 export const initialize = () => {
     onSignalRecieved(message.RtcOffer, async (offer) => {
         if (peerConnection) {
@@ -115,6 +116,7 @@ function setupDataChannel() {
 }
 function checkDataChannelState() {
     if (dataChannel.readyState === 'open') {
+        RTCopen = true;
         updateUI({ content: `Player1 is now connected to Player2`, clearContent: true });
     }
     else if (dataChannel.readyState === 'closed') {
@@ -122,6 +124,7 @@ function checkDataChannelState() {
             content: `Player2 was disconnected! 
 Waiting for new offer on: ${location.origin}`, clearContent: true
         });
+        RTCopen = false;
         reset();
     }
 }
