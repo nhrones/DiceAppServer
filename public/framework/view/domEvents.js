@@ -54,7 +54,6 @@ function handleMouseMove(evt) {
 }
 function handleClickOrTouch(mX, mY) {
     hit = false;
-    console.log(`clicked: currentID: ${currentPlayer.id} thisID: ${thisPlayer.id}`);
     if (currentPlayer.id === thisPlayer.id) {
         x = mX - canvas.offsetLeft;
         y = mY - canvas.offsetTop;
