@@ -11,6 +11,7 @@ const emptyString = '';
 const black = 'black';
 const infolabel = 'infolabel';
 const snow = 'snow';
+const UpdateScoreMsg = 60;
 export default class ScoreElement {
     constructor(index, name) {
         this.owner = null;
@@ -22,14 +23,15 @@ export default class ScoreElement {
         this.finalValue = 0;
         this.possibleValue = 0;
         this.scoringDieset = [0, 0, 0, 0, 0];
+        this.updateScoreMsg = 100 + this.index;
         ON(`${Event.ScoreButtonTouched}${this.index}`, () => {
-            sendSignal(`${message.UpdateScore}${this.index}`, {});
+            sendSignal(this.updateScoreMsg, "");
             if (this.clicked()) {
-                sendSignal(message.ResetTurn, {});
-                Fire(Event.ScoreElementResetTurn, {});
+                sendSignal(message.ResetTurn, "");
+                Fire(Event.ScoreElementResetTurn, "");
             }
         });
-        onSignalRecieved(`${message.UpdateScore}${this.index}`, () => {
+        onSignalRecieved(this.updateScoreMsg, () => {
             this.clicked();
         });
         ON(Event.UpdateTooltip + this.index, (data) => {

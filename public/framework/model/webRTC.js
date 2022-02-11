@@ -24,7 +24,7 @@ export const initialize = () => {
         }
         await peerConnection.setRemoteDescription(answer);
     });
-    onSignalRecieved(message.IceCandidate, async (candidate) => {
+    onSignalRecieved(message.candidate, async (candidate) => {
         if (!peerConnection) {
             if (DEBUG)
                 console.error('no peerconnection');
@@ -43,7 +43,7 @@ export const initialize = () => {
             peerConnection = null;
         }
     });
-    onSignalRecieved(message.ConnectOffer, (_data) => {
+    onSignalRecieved(message.connectOffer, (_data) => {
         if (peerConnection) {
             if (DEBUG)
                 console.log(`Already connected with Player2, ignoring 'connectOffer'!`);
@@ -55,7 +55,7 @@ export const initialize = () => {
     });
 };
 export const start = () => {
-    sendSignal(message.ConnectOffer, {});
+    sendSignal(message.connectOffer, {});
 };
 const reset = () => {
     dataChannel = null;
@@ -84,7 +84,7 @@ function createPeerConnection(isOfferer) {
             init.sdpMid = event.candidate.sdpMid;
             init.sdpMLineIndex = event.candidate.sdpMLineIndex;
         }
-        sendSignal(message.IceCandidate, init);
+        sendSignal(message.candidate, init);
     };
     if (isOfferer) {
         if (DEBUG)
@@ -107,7 +107,10 @@ function setupDataChannel() {
     dataChannel.onclose = checkDataChannelState;
     dataChannel.addEventListener("message", (event) => {
         const payload = JSON.parse(event.data);
-        dispatch(payload[0], payload[1]);
+        const topic = payload[0];
+        console.log(payload);
+        console.info('DataChannel recieved topic: ', message[topic]);
+        dispatch(topic, payload[1]);
     });
 }
 function checkDataChannelState() {

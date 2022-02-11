@@ -43,10 +43,10 @@ export const init = () => {
         }
     });
     onSignalRecieved(message.UpdateDie, (data) => {
-        const d = die[data.dieNumber];
-        if (d.value > 0) {
-            d.frozen = !d.frozen;
-            updateView(data.dieNumber, d.value, d.frozen);
+        const targetDie = die[data.dieNumber];
+        if (targetDie.value > 0) {
+            targetDie.frozen = !targetDie.frozen;
+            updateView(data.dieNumber, targetDie.value, targetDie.frozen);
         }
     });
 };

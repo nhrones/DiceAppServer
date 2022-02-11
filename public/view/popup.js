@@ -1,6 +1,6 @@
 import { container, ctx } from './container.js';
 import * as socket from '../framework/model/signalling.js';
-const { message: soc } = socket;
+const { message } = socket;
 import { ON, Event, Fire } from '../framework/model/events.js';
 let left = 1;
 let top = 1;
@@ -28,7 +28,7 @@ export default class Popup {
         ON(Event.ShowPopup, (data) => {
             this.show(data.message);
         });
-        socket.onSignalRecieved(soc.ShowPopup, (data) => {
+        socket.onSignalRecieved(message.ShowPopup, (data) => {
             this.show(data.message);
         });
         ON(Event.HidePopup, () => {

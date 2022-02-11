@@ -35,16 +35,12 @@ export const initialize = (serverURL) => {
     });
     if (DEBUG)
         console.log(`connected to: ${serverURL}`);
-    socket.addEventListener('message', (message) => {
-        console.info('socket recieved message.data: ', message.data);
-        const payload = JSON.parse(message.data);
-        if (Array.isArray(payload)) {
-            console.info('socket recieved topic: ', payload[0]);
-            dispatch(payload[0], payload[1]);
-        }
-        else {
-            dispatch(payload.topic, payload.data);
-        }
+    socket.addEventListener('message', (msg) => {
+        console.info('socket recieved message.data: ', msg.data);
+        const payload = JSON.parse(msg.data);
+        const topic = payload[0];
+        console.info('socket recieved topic: ', message[topic]);
+        dispatch(topic, payload[1]);
     });
 };
 export const registerPlayer = (id, name) => {
@@ -83,20 +79,20 @@ export const sendSignal = (topic, data) => {
 };
 export var message;
 (function (message) {
-    message["RegisterPlayer"] = "RegisterPlayer";
-    message["RemovePlayer"] = "RemovePlayer";
-    message["ResetGame"] = "ResetGame";
-    message["ResetTurn"] = "ResetTurn";
-    message["ShowPopup"] = "ShowPopup";
-    message["UpdateRoll"] = "UpdateRoll";
-    message["UpdateScore"] = "UpdateScore";
-    message["UpdateDie"] = "UpdateDie";
-    message["UpdatePlayers"] = "UpdatePlayers";
-    message["SetID"] = "SetID";
-    message["GameFull"] = "GameFull";
-    message["Bye"] = "bye";
-    message["RtcOffer"] = "RtcOffer";
-    message["RtcAnswer"] = "RtcAnswer";
-    message["IceCandidate"] = "candidate";
-    message["ConnectOffer"] = "connectOffer";
+    message[message["RegisterPlayer"] = 0] = "RegisterPlayer";
+    message[message["RemovePlayer"] = 1] = "RemovePlayer";
+    message[message["ResetGame"] = 2] = "ResetGame";
+    message[message["ResetTurn"] = 3] = "ResetTurn";
+    message[message["ShowPopup"] = 4] = "ShowPopup";
+    message[message["UpdateRoll"] = 5] = "UpdateRoll";
+    message[message["UpdateScore"] = 6] = "UpdateScore";
+    message[message["UpdateDie"] = 7] = "UpdateDie";
+    message[message["UpdatePlayers"] = 8] = "UpdatePlayers";
+    message[message["SetID"] = 9] = "SetID";
+    message[message["GameFull"] = 10] = "GameFull";
+    message[message["Bye"] = 11] = "Bye";
+    message[message["RtcOffer"] = 12] = "RtcOffer";
+    message[message["RtcAnswer"] = 13] = "RtcAnswer";
+    message[message["candidate"] = 14] = "candidate";
+    message[message["connectOffer"] = 15] = "connectOffer";
 })(message || (message = {}));
