@@ -2,6 +2,7 @@ import { Event, Fire } from './events.js';
 import * as webRTC from './webRTC.js';
 import { DEBUG } from '../../types.js';
 const subscriptions = new Map();
+const transactions = [];
 export let socket = null;
 export const initialize = (serverURL) => {
     if (DEBUG)

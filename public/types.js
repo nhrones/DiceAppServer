@@ -1,7 +1,4 @@
-
-//TODO fix - get from deno.env
 export const DEBUG = true;
-
 export const ICEconfiguration = {
     iceServers: [{
             urls: [

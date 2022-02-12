@@ -143,8 +143,7 @@ export default class ScoreElement {
     }
     setValue() {
         this.setOwned(true);
-        const thisValue = this.possibleValue;
-        this.finalValue = thisValue;
+        this.finalValue = this.possibleValue;
         this.scoringDiesetSum = 0;
         this.scoringDieset.forEach((_die, index) => {
             this.scoringDieset[index] = dice.die[index].value;
@@ -166,7 +165,7 @@ export default class ScoreElement {
         }
         else {
             this.hasFiveOfaKind = false;
-            if (thisValue === 0) {
+            if (this.finalValue === 0) {
                 PlaySound.Dohh();
             }
             else {
