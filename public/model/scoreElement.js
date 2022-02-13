@@ -11,7 +11,6 @@ const emptyString = '';
 const black = 'black';
 const infolabel = 'infolabel';
 const snow = 'snow';
-const UpdateScoreMsg = 60;
 export default class ScoreElement {
     constructor(index, name) {
         this.owner = null;

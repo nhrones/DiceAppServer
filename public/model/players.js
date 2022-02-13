@@ -145,7 +145,7 @@ export const setThisPlayer = (player) => {
 export let thisPlayer = {
     id: "0",
     idx: 0,
-    playerName: 'Nick',
+    playerName: 'Player1',
     color: 'brown',
     score: 0,
     lastScore: ''
@@ -153,7 +153,7 @@ export let thisPlayer = {
 export let currentPlayer = {
     id: "0",
     idx: 0,
-    playerName: "Nick",
+    playerName: "Player1",
     color: 'brown',
     score: 0,
     lastScore: ''

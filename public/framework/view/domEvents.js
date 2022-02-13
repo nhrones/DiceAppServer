@@ -37,12 +37,10 @@ function handleMouseMove(evt) {
     }
     if (node !== null) {
         if (node !== hoveredNode) {
-            if (!(node.name === 'player0textInput')) {
-                clearHovered();
-                node.hovered = true;
-                node.update();
-                hoveredNode = node;
-            }
+            clearHovered();
+            node.hovered = true;
+            node.update();
+            hoveredNode = node;
         }
     }
     else {
@@ -62,9 +60,6 @@ function handleClickOrTouch(mX, mY) {
                 if (ctx.isPointInPath(element.path, x, y)) {
                     element.touched();
                     hit = true;
-                    if (!(element.name === 'player0textInput')) {
-                        fireEvent(_.CancelEdits, {});
-                    }
                 }
             }
         }
