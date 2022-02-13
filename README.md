@@ -15,7 +15,7 @@ Deno-Deploy's BroadcastChannel implementation.
 The fun thing about the multiplayer game is that players are allowed    
 to 'steal' other players score items if they roll a greater sum for that item.    
 
-HeeHee ... snicker-sniker ...
+HeeHee ... snicker-sniker ... click img to try it out!
 
 [![dice](./dice.jpg)](https://rtc-dice-app-server.deno.dev/)    
    
