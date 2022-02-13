@@ -14,7 +14,8 @@ else {
     socket.initialize('wss://rtc-signal-server.deno.dev');
 }
 onSignalRecieved(message.SetID, (data) => {
-    const name = 'Player';
+    console.info('message.SetID: data = ', data);
+    let name = 'Player' + data.role;
     const hiddenButton = document.getElementById('hidden-button');
     hiddenButton.hidden = true;
     hiddenButton.addEventListener('click', function () {
@@ -23,7 +24,7 @@ onSignalRecieved(message.SetID, (data) => {
     }, false);
     hiddenButton.click();
     Players.thisPlayer.id = data.id;
-    Players.thisPlayer.playerName = (name === 'Player') ? 'Player1' : name;
+    Players.thisPlayer.playerName = name;
     Players.setThisPlayer(Players.thisPlayer);
     Players.setCurrentPlayer(Players.thisPlayer);
     registerPlayer(data.id, name);

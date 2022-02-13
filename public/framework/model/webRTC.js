@@ -44,7 +44,7 @@ export const initialize = () => {
             peerConnection = null;
         }
     });
-    onSignalRecieved(message.connectOffer, (_data) => {
+    onSignalRecieved(message.invitation, (_data) => {
         if (peerConnection) {
             if (DEBUG)
                 console.log(`Already connected with Player2, ignoring 'connectOffer'!`);
@@ -56,7 +56,7 @@ export const initialize = () => {
     });
 };
 export const start = () => {
-    sendSignal(message.connectOffer, {});
+    sendSignal(message.invitation, {});
 };
 const reset = () => {
     dataChannel = null;

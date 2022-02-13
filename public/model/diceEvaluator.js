@@ -18,7 +18,6 @@ export let hasTripsOrBetter = false;
 export let hasFullHouse = false;
 export let hasSmallStr = false;
 export let hasLargeStr = false;
-export let hasFullStr = false;
 export const evaluateDieValues = () => {
     countOfDieFaceValue = [0, 0, 0, 0, 0, 0, 0];
     sumOfAllDie = 0;
@@ -44,7 +43,6 @@ const setScoringFlags = () => {
     hasFullHouse = false;
     hasSmallStr = false;
     hasLargeStr = false;
-    hasFullStr = false;
     for (let i = 0; i < 7; i++) {
         if (countOfDieFaceValue[i] === 5) {
             hasFiveOfaKind = true;

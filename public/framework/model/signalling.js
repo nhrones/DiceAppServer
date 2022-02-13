@@ -100,5 +100,5 @@ export var message;
     message[message["RtcOffer"] = 12] = "RtcOffer";
     message[message["RtcAnswer"] = 13] = "RtcAnswer";
     message[message["candidate"] = 14] = "candidate";
-    message[message["connectOffer"] = 15] = "connectOffer";
+    message[message["invitation"] = 15] = "invitation";
 })(message || (message = {}));
