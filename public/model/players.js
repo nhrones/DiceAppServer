@@ -1,6 +1,7 @@
 import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
 import { Event, Fire } from '../framework/model/events.js';
 import { DEBUG } from '../types.js';
+import * as gameState from '../gameState.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -20,8 +21,9 @@ export const init = (thisgame, color) => {
     onSignalRecieved(message.RegisterPlayer, (player) => {
         if (DEBUG)
             console.info('RegisterPlayer: ', player);
-        const id = player[0];
-        const name = player[1];
+        const { id, name, role } = player;
+        gameState.manageState('connect', id, name, role);
+        console.log('Recieved.RegisterPlayer - state:', gameState.toString());
         if (DEBUG)
             console.log(`WS.RegisterPlayer ${id}  ${name}`);
         addPlayer(id, name);

@@ -46,8 +46,8 @@ export const initialize = (serverURL) => {
         dispatch(topic, payload[1]);
     });
 };
-export const registerPlayer = (id, name) => {
-    sendSignal(message.RegisterPlayer, [id, name]);
+export const registerPlayer = (id, name, role) => {
+    sendSignal(message.RegisterPlayer, { id: id, name: name, role: role });
 };
 export const dispatch = (topic, data) => {
     if (subscriptions.has(topic)) {

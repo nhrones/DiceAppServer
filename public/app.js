@@ -2,6 +2,7 @@ import { DiceGame, game } from './model/diceGame.js';
 import { Container, container } from './view/container.js';
 import * as socket from './framework/model/signalling.js';
 import * as Players from './model/players.js';
+import * as gameState from './gameState.js';
 import { DEBUG } from './types.js';
 const { onSignalRecieved, registerPlayer, message } = socket;
 const proto = (window.location.protocol === 'http:') ? 'ws://' : 'wss://';
@@ -16,18 +17,13 @@ else {
 onSignalRecieved(message.SetID, (data) => {
     console.info('message.SetID: data = ', data);
     let name = 'Player' + data.role;
-    const hiddenButton = document.getElementById('hidden-button');
-    hiddenButton.hidden = true;
-    hiddenButton.addEventListener('click', function () {
-        if (DEBUG)
-            console.log('hiddenButton was clicked');
-    }, false);
-    hiddenButton.click();
+    gameState.manageState('connect', data.id, name, data.role);
+    console.log('Game state:', gameState.toString());
     Players.thisPlayer.id = data.id;
     Players.thisPlayer.playerName = name;
     Players.setThisPlayer(Players.thisPlayer);
     Players.setCurrentPlayer(Players.thisPlayer);
-    registerPlayer(data.id, name);
+    registerPlayer(data.id, name, data.role);
     Players.addPlayer(data.id, name);
     if (game) {
         game.resetGame();
