@@ -52,6 +52,7 @@ export const init = (thisgame, color) => {
         game.resetGame();
     });
     onSignalRecieved(message.RemovePlayer, (id) => {
+        gameState.manageState('disconnect', id, '', 0);
         removePlayer(id);
         game.resetGame();
     });

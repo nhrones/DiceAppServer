@@ -17,9 +17,11 @@ export const manageState = (action, id, name, role) => {
     else if (action === 'disconnect') {
         if (callee.id === id) {
             callee.id = emptyString;
+            callee.name = emptyString;
         }
         else if (caller.id === id) {
             caller.id = emptyString;
+            caller.name = emptyString;
         }
     }
 };
