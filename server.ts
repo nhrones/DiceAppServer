@@ -48,7 +48,7 @@ async function handleRequest(request: Request): Promise<Response> {
     // serve a file
     try {
         const path = "." + pathname
-        if (DEBUG) console.log(`Serving File ${path}`)
+        //if (DEBUG) console.log(`Serving File ${path}`)
         const body = await Deno.readFile(path)
         const headers = new Headers()
         headers.set("content-type", contentType(path))

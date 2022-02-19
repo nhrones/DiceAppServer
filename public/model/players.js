@@ -1,4 +1,4 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/model/signalling.js';
+import { onSignalRecieved, message, sendSignal } from '../framework/comms/signalling.js';
 import { Event, Fire } from '../framework/model/events.js';
 import { DEBUG } from '../types.js';
 import * as gameState from '../gameState.js';
@@ -21,8 +21,8 @@ export const init = (thisgame, color) => {
     onSignalRecieved(message.RegisterPlayer, (player) => {
         if (DEBUG)
             console.info('RegisterPlayer: ', player);
-        const { id, name, role } = player;
-        gameState.manageState('connect', id, name, role);
+        const { id, name, table, seat } = player;
+        gameState.manageState('connect', id, name, table, seat);
         console.log('Recieved.RegisterPlayer - state:', gameState.toString());
         if (DEBUG)
             console.log(`WS.RegisterPlayer ${id}  ${name}`);
@@ -52,7 +52,7 @@ export const init = (thisgame, color) => {
         game.resetGame();
     });
     onSignalRecieved(message.RemovePlayer, (id) => {
-        gameState.manageState('disconnect', id, '', 0);
+        gameState.manageState('disconnect', id, '', 0, 0);
         removePlayer(id);
         game.resetGame();
     });

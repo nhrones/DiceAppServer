@@ -1,4 +1,4 @@
-import { Event, Fire } from './events.js';
+import { Event, Fire } from '../model/events.js';
 import * as webRTC from './webRTC.js';
 import { DEBUG } from '../../types.js';
 const subscriptions = new Map();

@@ -1,6 +1,6 @@
 import { DiceGame, game } from './model/diceGame.js';
 import { Container, container } from './view/container.js';
-import * as socket from './framework/model/signalling.js';
+import * as socket from './framework/comms/signalling.js';
 import * as Players from './model/players.js';
 import * as gameState from './gameState.js';
 import { DEBUG } from './types.js';
@@ -15,15 +15,15 @@ else {
     socket.initialize('wss://rtc-signal-server.deno.dev');
 }
 onSignalRecieved(message.SetID, (data) => {
-    console.info('message.SetID: data = ', data);
-    let name = 'Player' + data.role;
-    gameState.manageState('connect', data.id, name, data.role);
+    console.info('--------------------------------message.SetID: data = ', data);
+    let name = 'Player' + data.seat;
+    gameState.manageState('connect', data.id, name, data.table, data.seat);
     console.log('Game state:', gameState.toString());
     Players.thisPlayer.id = data.id;
     Players.thisPlayer.playerName = name;
     Players.setThisPlayer(Players.thisPlayer);
     Players.setCurrentPlayer(Players.thisPlayer);
-    registerPlayer(data.id, name, data.role);
+    registerPlayer(data.id, name, data.table, data.seat);
     Players.addPlayer(data.id, name);
     if (game) {
         game.resetGame();
