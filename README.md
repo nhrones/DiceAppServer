@@ -37,6 +37,9 @@ Have fun!
 ## Run Online
 https://rtc-dice-app-server.deno.dev/    
 
+## game repo (Typescript) 
+https://github.com/nhrones/RtcDiceApp
+
 ## Developed using my own custom framework (Surface)
 ## Interesting features
 ### Just a single DOM canvas element 
@@ -61,4 +64,4 @@ https://rtc-dice-app-server.deno.dev/
     
 ### ZERO External Dependencies PURE Vanilla Typescript  
 
-[![comms](./WS-BC-comms.png)]  
+![comms](./hookup-comms.png) 
