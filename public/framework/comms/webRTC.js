@@ -1,4 +1,4 @@
-import { onSignalRecieved, message, sendSignal, disconnect } from './signalling.js';
+import { onSignalRecieved, message, sendSignal } from './signalling.js';
 import { DEBUG } from '../../types.js';
 import { dispatch } from './signalling.js';
 export let peerConnection;
@@ -56,6 +56,7 @@ export const initialize = () => {
     });
 };
 export const start = () => {
+    sendSignal(message.invitation, {});
 };
 const reset = () => {
     dataChannel = null;
@@ -117,7 +118,6 @@ function setupDataChannel() {
 function checkDataChannelState() {
     if (dataChannel.readyState === 'open') {
         RTCopen = true;
-        disconnect();
         updateUI({ content: `Player1 is now connected to Player2`, clearContent: true });
     }
     else if (dataChannel.readyState === 'closed') {
