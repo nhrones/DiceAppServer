@@ -1,8 +1,8 @@
 import { DiceGame, game } from './model/diceGame.js';
 import { Container, container } from './view/container.js';
-import * as socket from './framework/comms/signalling.js';
+import * as socket from './framework/comms/signaling.js';
 import * as Players from './model/players.js';
-import * as gameState from './gameState.js';
+import { gameState } from './gameState.js';
 import { DEBUG } from './types.js';
 const { onSignalRecieved, registerPlayer, message } = socket;
 const proto = (window.location.protocol === 'http:') ? 'ws://' : 'wss://';
@@ -15,9 +15,8 @@ else {
     socket.initialize('wss://rtc-signal-server.deno.dev');
 }
 onSignalRecieved(message.SetID, (data) => {
-    console.info('--------------------------------message.SetID: data = ', data);
     let name = 'Player' + data.seat;
-    gameState.manageState('connect', data.id, name, data.table, data.seat);
+    gameState.connect(data.id, name, data.table, data.seat);
     console.log('Game state:', gameState.toString());
     Players.thisPlayer.id = data.id;
     Players.thisPlayer.playerName = name;
@@ -30,8 +29,9 @@ onSignalRecieved(message.SetID, (data) => {
     }
 });
 onSignalRecieved(message.GameFull, () => {
-    const msg = `Sorry, This game is already full!
-This tab/window will automatically close!`;
+    const msg = `Sorry! This game is full!
+Please close the tab/window! 
+Try again in a minute or two!`;
     if (DEBUG)
         console.log(msg);
     alert(msg);

@@ -1,4 +1,4 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signalling.js';
+import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import { currentPlayer, thisPlayer } from './players.js';
 import * as PlaySound from '../framework/model/sounds.js';

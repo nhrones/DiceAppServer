@@ -1,11 +1,14 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signalling.js';
+import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
 import { Event, Fire } from '../framework/model/events.js';
 import { DEBUG } from '../types.js';
-import * as gameState from '../gameState.js';
+import { gameState } from '../gameState.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
 export const players = new Set();
+export const getCount = () => {
+    return players.size;
+};
 export const init = (thisgame, color) => {
     game = thisgame;
     thisColor = color;
@@ -22,8 +25,7 @@ export const init = (thisgame, color) => {
         if (DEBUG)
             console.info('RegisterPlayer: ', player);
         const { id, name, table, seat } = player;
-        gameState.manageState('connect', id, name, table, seat);
-        console.log('Recieved.RegisterPlayer - state:', gameState.toString());
+        gameState.connect(id, name, table, seat);
         if (DEBUG)
             console.log(`WS.RegisterPlayer ${id}  ${name}`);
         addPlayer(id, name);
@@ -52,7 +54,7 @@ export const init = (thisgame, color) => {
         game.resetGame();
     });
     onSignalRecieved(message.RemovePlayer, (id) => {
-        gameState.manageState('disconnect', id, '', 0, 0);
+        gameState.disconnect(id, '', 0, 0);
         removePlayer(id);
         game.resetGame();
     });
@@ -108,10 +110,11 @@ export const addPlayer = (id, playerName) => {
 };
 const removePlayer = (id) => {
     const p = getById(id);
+    if (p === null)
+        return;
     if (DEBUG)
         console.info(' removing player', p);
-    if (p)
-        players.delete(p);
+    players.delete(p);
     refreshPlayerColors();
     setThisPlayer([...players][0]);
 };

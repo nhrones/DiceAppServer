@@ -1,5 +1,5 @@
 import { container, ctx } from './container.js';
-import * as socket from '../framework/comms/signalling.js';
+import * as socket from '../framework/comms/signaling.js';
 const { message } = socket;
 import { ON, Event, Fire } from '../framework/model/events.js';
 let left = 1;

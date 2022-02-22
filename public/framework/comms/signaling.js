@@ -19,7 +19,7 @@ export const initialize = (serverURL) => {
     socket = new WebSocket(serverURL);
     socket.onopen = () => {
         if (DEBUG)
-            console.log('signalling.socket.opened!');
+            console.log('signaling.socket.opened!');
         webRTC.initialize();
         webRTC.start();
     };
@@ -51,7 +51,7 @@ export const disconnect = () => {
     socket.close(1000, 'WebRtc connected! No longer needed!');
 };
 export const registerPlayer = (id, name, table, seat) => {
-    sendSignal(message.RegisterPlayer, { id: id, name: name, table: table, seat: seat });
+    socket.send(JSON.stringify([message.RegisterPlayer, { id: id, name: name, table: table, seat: seat }]));
 };
 export const dispatch = (topic, data) => {
     if (subscriptions.has(topic)) {
@@ -74,17 +74,16 @@ export const sendSignal = (topic, data) => {
     const msg = JSON.stringify([topic, data]);
     if (webRTC.dataChannel && webRTC.dataChannel.readyState === 'open') {
         if (DEBUG)
-            console.log('broadcast on DataChannel:', msg);
+            console.log('DataChannel >> :', msg);
         webRTC.dataChannel.send(msg);
     }
-    else if (socket) {
+    else if (socket.readyState === WebSocket.OPEN) {
         if (DEBUG)
-            console.log('broadcast on WebSocket:', msg);
+            console.log('socket >> :', msg);
         socket.send(msg);
     }
     else {
-        if (DEBUG)
-            console.error('No place to send:', msg);
+        console.error('No place to send:', msg);
     }
 };
 export var message;
@@ -100,9 +99,4 @@ export var message;
     message[message["UpdatePlayers"] = 8] = "UpdatePlayers";
     message[message["SetID"] = 9] = "SetID";
     message[message["GameFull"] = 10] = "GameFull";
-    message[message["Bye"] = 11] = "Bye";
-    message[message["RtcOffer"] = 12] = "RtcOffer";
-    message[message["RtcAnswer"] = 13] = "RtcAnswer";
-    message[message["candidate"] = 14] = "candidate";
-    message[message["invitation"] = 15] = "invitation";
 })(message || (message = {}));

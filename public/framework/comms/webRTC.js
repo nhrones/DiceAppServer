@@ -1,6 +1,6 @@
-import { onSignalRecieved, message, sendSignal } from './signalling.js';
+import { onSignalRecieved, sendSignal } from './signaling.js';
 import { DEBUG } from '../../types.js';
-import { dispatch } from './signalling.js';
+import { dispatch } from './signaling.js';
 export let peerConnection;
 export let dataChannel;
 export let RTCopen = false;
@@ -116,17 +116,20 @@ function setupDataChannel() {
     });
 }
 function checkDataChannelState() {
-    if (dataChannel.readyState === 'open') {
-        RTCopen = true;
-        updateUI({ content: `Player1 is now connected to Player2`, clearContent: true });
+    if (dataChannel.readyState === ReadyState.open) {
+        if (RTCopen === false) {
+            RTCopen = true;
+            updateUI({ content: `Player1 is now connected to Player2`, clearContent: true });
+        }
     }
-    else if (dataChannel.readyState === 'closed') {
-        updateUI({
-            content: `Player2 was disconnected! 
-Waiting for new offer on: ${location.origin}`, clearContent: true
-        });
-        RTCopen = false;
-        reset();
+    else if (dataChannel.readyState === ReadyState.closed) {
+        if (RTCopen === true) {
+            RTCopen = false;
+            updateUI({
+                content: `Player2 was disconnected! Waiting for new offer on: ${location.origin}`, clearContent: true
+            });
+            reset();
+        }
     }
 }
 export async function makeConnection() {
@@ -140,3 +143,17 @@ function updateUI(msg) {
     if (DEBUG)
         console.log(msg.content);
 }
+export const ReadyState = {
+    closed: 'closed',
+    closing: 'closing',
+    connecting: 'connecting',
+    open: 'open',
+};
+export var message;
+(function (message) {
+    message[message["Bye"] = 11] = "Bye";
+    message[message["RtcOffer"] = 12] = "RtcOffer";
+    message[message["RtcAnswer"] = 13] = "RtcAnswer";
+    message[message["candidate"] = 14] = "candidate";
+    message[message["invitation"] = 15] = "invitation";
+})(message || (message = {}));
