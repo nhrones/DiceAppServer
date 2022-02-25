@@ -15,7 +15,7 @@ else {
     socket.initialize('wss://rtc-signal-server.deno.dev');
 }
 onSignalRecieved(message.SetID, (data) => {
-    let name = 'Player' + data.seat;
+    const name = 'Player' + data.seat;
     gameState.connect(data.id, name, data.table, data.seat);
     console.log('Game state:', gameState.toString());
     Players.thisPlayer.id = data.id;

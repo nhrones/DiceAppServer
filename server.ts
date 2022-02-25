@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.124.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.127.0/http/server.ts";
 const DEBUG = (Deno.env.get("DEBUG") === "true") || false
 export const Region = Deno.env.get("DENO_REGION") || 'localhost'
 
