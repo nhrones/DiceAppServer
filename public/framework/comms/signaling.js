@@ -5,6 +5,12 @@ import { DEBUG, SSEReadyState, SignalServer } from '../../constants.js';
 import * as Players from '../../model/players.js';
 import { game } from '../../model/diceGame.js';
 export let thisID = 'Player1';
+const host = window.location.host;
+console.log('host', host)
+const SignalServerURL = (host === '127.0.0.1:8000' || host === 'localhost:8000')
+    ? 'http://localhost:8000'
+    : SignalServer;
+console.log('SignalServerURL', SignalServerURL);
 const subscriptions = new Map();
 export let sse;
 export const initialize = (name, id) => {
@@ -14,7 +20,7 @@ export const initialize = (name, id) => {
     window.addEventListener('beforeunload', () => {
         disconnect();
     });
-    sse = new EventSource(SignalServer + '/listen/' + id);
+    sse = new EventSource(SignalServerURL + '/listen/' + id);
     sse.onopen = () => {
         if (DEBUG)
             console.log('Sse.onOpen! >>>  webRTC.start()');
@@ -91,7 +97,7 @@ export const registerPlayer = (id, name) => {
     };
     const msg = JSON.stringify(regObj);
     console.log('Step-6 - POST registeringPlayer >>> ', msg);
-    fetch(SignalServer, {
+    fetch(SignalServerURL, {
         method: "POST",
         body: msg
     });
@@ -124,7 +130,7 @@ export const sendSignal = (msg) => {
         const sigMsg = JSON.stringify({ from: thisID, topic: msg.topic, data: msg.data });
         if (DEBUG)
             console.log('Sending to sig-server >>> :', sigMsg);
-        fetch(SignalServer, {
+        fetch(SignalServerURL, {
             method: "POST",
             body: sigMsg
         });
