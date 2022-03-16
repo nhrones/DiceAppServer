@@ -1,34 +1,14 @@
-import { DiceGame, game } from './model/diceGame.js';
+import { sigMessage } from './types.js';
+import { DiceGame } from './model/diceGame.js';
 import { Container, container } from './view/container.js';
-import * as socket from './framework/comms/signaling.js';
-import * as Players from './model/players.js';
-import { gameState } from './gameState.js';
-import { DEBUG } from './types.js';
-const { onSignalRecieved, registerPlayer, message } = socket;
-const proto = (window.location.protocol === 'http:') ? 'ws://' : 'wss://';
-const serverURL = `${proto}${window.location.host}:8000`;
-const thisHost = window.location.host;
-if (thisHost === 'localhost' || thisHost === '127.0.0.1') {
-    socket.initialize(serverURL);
-}
-else {
-    socket.initialize('wss://rtc-signal-server.deno.dev');
-}
-onSignalRecieved(message.SetID, (data) => {
-    const name = 'Player' + data.seat;
-    gameState.connect(data.id, name, data.table, data.seat);
-    console.log('Game state:', gameState.toString());
-    Players.thisPlayer.id = data.id;
-    Players.thisPlayer.playerName = name;
-    Players.setThisPlayer(Players.thisPlayer);
-    Players.setCurrentPlayer(Players.thisPlayer);
-    registerPlayer(data.id, name, data.table, data.seat);
-    Players.addPlayer(data.id, name);
-    if (game) {
-        game.resetGame();
-    }
-});
-onSignalRecieved(message.GameFull, () => {
+import * as signaler from './framework/comms/signaling.js';
+import { DEBUG } from './constants.js';
+const { onSignalRecieved } = signaler;
+let name = prompt("What's your name?", "Bill") || 'Nick';
+let t = Date.now().toString();
+export let myID = name + '-' + t.substring(t.length - 3);
+signaler.initialize(name, myID);
+onSignalRecieved(sigMessage.GameFull, () => {
     const msg = `Sorry! This game is full!
 Please close the tab/window! 
 Try again in a minute or two!`;

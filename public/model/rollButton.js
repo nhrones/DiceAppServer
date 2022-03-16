@@ -1,4 +1,5 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
+import { sigMessage } from '../types.js';
+import { onSignalRecieved, sendSignal } from '../framework/comms/signaling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import * as dice from './dice.js';
 const kind = 'rollbutton';
@@ -6,10 +7,10 @@ export const state = { text: '', color: '', enabled: true };
 export const init = () => {
     ON(`${Event.ButtonTouched}${kind}`, () => {
         dice.roll(null);
-        sendSignal(message.UpdateRoll, dice.toString());
+        sendSignal({ topic: sigMessage.UpdateRoll, data: dice.toString() });
         updateRollState();
     });
-    onSignalRecieved(message.UpdateRoll, (diceArray) => {
+    onSignalRecieved(sigMessage.UpdateRoll, (diceArray) => {
         dice.roll(JSON.parse(diceArray));
         updateRollState();
     });

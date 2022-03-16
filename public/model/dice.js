@@ -1,4 +1,5 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
+import { sigMessage } from '../types.js';
+import { onSignalRecieved, sendSignal } from '../framework/comms/signaling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as evaluator from './diceEvaluator.js';
@@ -39,10 +40,10 @@ export const init = () => {
             thisDie.frozen = !thisDie.frozen;
             updateView(index, thisDie.value, thisDie.frozen);
             PlaySound.Select();
-            sendSignal(message.UpdateDie, { dieNumber: index });
+            sendSignal({ topic: sigMessage.UpdateDie, data: { dieNumber: index } });
         }
     });
-    onSignalRecieved(message.UpdateDie, (data) => {
+    onSignalRecieved(sigMessage.UpdateDie, (data) => {
         const targetDie = die[data.dieNumber];
         if (targetDie.value > 0) {
             targetDie.frozen = !targetDie.frozen;

@@ -1,7 +1,7 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
+import { sigMessage } from '../types.js';
+import { onSignalRecieved, sendSignal } from '../framework/comms/signaling.js';
 import { Event, Fire } from '../framework/model/events.js';
-import { DEBUG } from '../types.js';
-import { gameState } from '../gameState.js';
+import { DEBUG } from '../constants.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -21,19 +21,19 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    onSignalRecieved(message.RegisterPlayer, (player) => {
+    onSignalRecieved(sigMessage.RegisterPlayer, (player) => {
         if (DEBUG)
-            console.info('RegisterPlayer: ', player);
-        const { id, name, table, seat } = player;
-        gameState.connect(id, name, table, seat);
+            console.info('@@@@@@@@@@@@@@@@@@@@@@@Players Got RegisterPlayer: @@@@@@@@@@@@@@@@@', (typeof player));
+        console.log('playerid: ', player.id);
+        const { id, name } = player;
         if (DEBUG)
-            console.log(`WS.RegisterPlayer ${id}  ${name}`);
+            console.log(`Players.RegisterPlayer ${id}  ${name}`);
         addPlayer(id, name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        sendSignal(message.UpdatePlayers, Array.from(players.values()));
+        sendSignal({ topic: sigMessage.UpdatePlayers, data: Array.from(players.values()) });
     });
-    onSignalRecieved(message.UpdatePlayers, (playersArray) => {
+    onSignalRecieved(sigMessage.UpdatePlayers, (playersArray) => {
         players.clear();
         resetScoreLabels();
         playersArray.forEach((newPlayer, index) => {
@@ -53,8 +53,7 @@ export const init = (thisgame, color) => {
         setCurrentPlayer([...players][0]);
         game.resetGame();
     });
-    onSignalRecieved(message.RemovePlayer, (id) => {
-        gameState.disconnect(id, '', 0, 0);
+    onSignalRecieved(sigMessage.RemovePlayer, (id) => {
         removePlayer(id);
         game.resetGame();
     });
@@ -108,7 +107,7 @@ export const addPlayer = (id, playerName) => {
     if (DEBUG)
         console.info(' added player', Array.from(players.values()));
 };
-const removePlayer = (id) => {
+export const removePlayer = (id) => {
     const p = getById(id);
     if (p === null)
         return;
@@ -117,6 +116,7 @@ const removePlayer = (id) => {
     players.delete(p);
     refreshPlayerColors();
     setThisPlayer([...players][0]);
+    setCurrentPlayer([...players][0]);
 };
 const getById = (id) => {
     for (const player of players) {
@@ -143,6 +143,8 @@ const refreshPlayerColors = () => {
 };
 const playerColors = ["Brown", "Green", "RoyalBlue", "Red"];
 export const setThisPlayer = (player) => {
+    if (DEBUG)
+        console.log(`Step-4 - Players.setThisPlayer: ${player.playerName}`);
     const favicon = document.getElementById("favicon");
     thisPlayer = player;
     document.title = thisPlayer.playerName;
@@ -166,6 +168,6 @@ export let currentPlayer = {
 };
 export const setCurrentPlayer = (player) => {
     if (DEBUG)
-        console.log(`settingCurrentPlayer: ${player.playerName}`);
+        console.log(`Step-5 - Players.settingCurrentPlayer: ${player.playerName}`);
     currentPlayer = player;
 };

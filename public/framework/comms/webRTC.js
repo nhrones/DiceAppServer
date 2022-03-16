@@ -1,11 +1,14 @@
-import { onSignalRecieved, sendSignal } from './signaling.js';
-import { DEBUG } from '../../types.js';
-import { dispatch } from './signaling.js';
+import { rtcMessage, sigMessage } from '../../types.js';
+import { dispatch, onSignalRecieved, sendSignal } from './signaling.js';
+import { DEBUG } from '../../constants.js';
+import { Event, Fire } from '../model/events.js';
+import { players, removePlayer } from '../../model/players.js';
 export let peerConnection;
 export let dataChannel;
 export let RTCopen = false;
 export const initialize = () => {
-    onSignalRecieved(message.RtcOffer, async (offer) => {
+    onSignalRecieved(rtcMessage.RtcOffer, async (offer) => {
+        console.info('offer: ', offer);
         if (peerConnection) {
             if (DEBUG)
                 console.error('existing peerconnection');
@@ -14,10 +17,10 @@ export const initialize = () => {
         createPeerConnection(false);
         await peerConnection.setRemoteDescription(offer);
         const answer = await peerConnection.createAnswer();
-        sendSignal(message.RtcAnswer, { type: 'answer', sdp: answer.sdp });
+        sendSignal({ topic: rtcMessage.RtcAnswer, data: { type: 'answer', sdp: answer.sdp } });
         await peerConnection.setLocalDescription(answer);
     });
-    onSignalRecieved(message.RtcAnswer, async (answer) => {
+    onSignalRecieved(rtcMessage.RtcAnswer, async (answer) => {
         if (!peerConnection) {
             if (DEBUG)
                 console.error('no peerconnection');
@@ -25,7 +28,7 @@ export const initialize = () => {
         }
         await peerConnection.setRemoteDescription(answer);
     });
-    onSignalRecieved(message.candidate, async (candidate) => {
+    onSignalRecieved(rtcMessage.candidate, async (candidate) => {
         if (!peerConnection) {
             if (DEBUG)
                 console.error('no peerconnection');
@@ -38,13 +41,13 @@ export const initialize = () => {
             await peerConnection.addIceCandidate(candidate);
         }
     });
-    onSignalRecieved(message.Bye, () => {
+    onSignalRecieved(rtcMessage.Bye, () => {
         if (peerConnection) {
             peerConnection.close();
             peerConnection = null;
         }
     });
-    onSignalRecieved(message.invitation, (_data) => {
+    onSignalRecieved(rtcMessage.invitation, (_data) => {
         if (peerConnection) {
             if (DEBUG)
                 console.log(`Already connected with Player2, ignoring 'connectOffer'!`);
@@ -56,12 +59,14 @@ export const initialize = () => {
     });
 };
 export const start = () => {
-    sendSignal(message.invitation, {});
+    sendSignal({ topic: rtcMessage.invitation, data: {} });
 };
-const reset = () => {
+const reset = (msg) => {
     dataChannel = null;
     peerConnection = null;
     start();
+    removePlayer([...players][1].id);
+    Fire(Event.ShowPopup, { message: msg });
 };
 function createPeerConnection(isOfferer) {
     if (DEBUG)
@@ -85,7 +90,7 @@ function createPeerConnection(isOfferer) {
             init.sdpMid = event.candidate.sdpMid;
             init.sdpMLineIndex = event.candidate.sdpMLineIndex;
         }
-        sendSignal(message.candidate, init);
+        sendSignal({ topic: rtcMessage.candidate, data: init });
     };
     if (isOfferer) {
         if (DEBUG)
@@ -106,14 +111,14 @@ function setupDataChannel() {
     checkDataChannelState();
     dataChannel.onopen = checkDataChannelState;
     dataChannel.onclose = checkDataChannelState;
-    dataChannel.addEventListener("message", (event) => {
-        const payload = JSON.parse(event.data);
-        const topic = payload[0];
-        const tName = (topic > 59) ? 'UpdateScore' : message[topic];
+    dataChannel.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        const { topic, data } = msg;
+        const tName = (topic > 59) ? 'UpdateScore' : (topic < 10) ? sigMessage[topic] : rtcMessage[topic];
         if (DEBUG)
             console.info('DataChannel recieved topic: ', tName);
-        dispatch(topic, payload[1]);
-    });
+        dispatch(topic, data);
+    };
 }
 function checkDataChannelState() {
     if (dataChannel.readyState === ReadyState.open) {
@@ -125,17 +130,14 @@ function checkDataChannelState() {
     else if (dataChannel.readyState === ReadyState.closed) {
         if (RTCopen === true) {
             RTCopen = false;
-            updateUI({
-                content: `Player2 was disconnected! Waiting for new offer on: ${location.origin}`, clearContent: true
-            });
-            reset();
+            reset('Player2 has disconnected!');
         }
     }
 }
 export async function makeConnection() {
     createPeerConnection(true);
     const offer = await peerConnection.createOffer();
-    sendSignal(message.RtcOffer, { type: 'offer', sdp: offer.sdp });
+    sendSignal({ topic: rtcMessage.RtcOffer, data: { type: 'offer', sdp: offer.sdp } });
     await peerConnection.setLocalDescription(offer);
 }
 updateUI({ content: `Player1 is waiting for a connection from: ${location.origin}` });
@@ -149,11 +151,3 @@ export const ReadyState = {
     connecting: 'connecting',
     open: 'open',
 };
-export var message;
-(function (message) {
-    message[message["Bye"] = 11] = "Bye";
-    message[message["RtcOffer"] = 12] = "RtcOffer";
-    message[message["RtcAnswer"] = 13] = "RtcAnswer";
-    message[message["candidate"] = 14] = "candidate";
-    message[message["invitation"] = 15] = "invitation";
-})(message || (message = {}));

@@ -1,4 +1,5 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
+import { sigMessage } from '../types.js';
+import { onSignalRecieved, sendSignal } from '../framework/comms/signaling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import { currentPlayer, thisPlayer } from './players.js';
 import * as PlaySound from '../framework/model/sounds.js';
@@ -24,9 +25,9 @@ export default class ScoreElement {
         this.scoringDieset = [0, 0, 0, 0, 0];
         this.updateScoreMsg = 100 + this.index;
         ON(`${Event.ScoreButtonTouched}${this.index}`, () => {
-            sendSignal(this.updateScoreMsg, "");
+            sendSignal({ topic: this.updateScoreMsg, data: "" });
             if (this.clicked()) {
-                sendSignal(message.ResetTurn, "");
+                sendSignal({ topic: sigMessage.ResetTurn, data: "" });
                 Fire(Event.ScoreElementResetTurn, "");
             }
         });

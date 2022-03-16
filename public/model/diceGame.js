@@ -1,4 +1,5 @@
-import { onSignalRecieved, message, sendSignal } from '../framework/comms/signaling.js';
+import { sigMessage } from '../types.js';
+import { onSignalRecieved, sendSignal } from '../framework/comms/signaling.js';
 import { ON, Event, Fire } from '../framework/model/events.js';
 import * as Players from '../model/players.js';
 import * as PlaySound from '../framework/model/sounds.js';
@@ -20,16 +21,16 @@ export class DiceGame {
         this.rightTotal = 0;
         dice.init();
         rollButton.init();
-        onSignalRecieved(message.ResetTurn, (_data) => {
+        onSignalRecieved(sigMessage.ResetTurn, (_data) => {
             if (!this.isGameComplete()) {
                 this.resetTurn();
             }
         });
-        onSignalRecieved(message.ResetGame, (data) => {
+        onSignalRecieved(sigMessage.ResetGame, (data) => {
             this.resetGame();
         });
         ON(Event.PopupResetGame, () => {
-            sendSignal(message.ResetGame, {});
+            sendSignal({ topic: sigMessage.ResetGame, data: {} });
             this.resetGame();
         });
         ON(Event.ScoreElementResetTurn, () => {
@@ -126,7 +127,8 @@ export class DiceGame {
         rollButton.update();
         Fire(Event.UpdateLabel + 'infolabel', { state: 0, color: 'snow', textColor: 'black', text: winMsg + ' ' + winner.score });
         Fire(Event.ShowPopup, { message: winMsg + ' ' + winner.score });
-        sendSignal(message.ShowPopup, { message: winner.playerName + ' wins!' + ' ' + winner.score });
+        sendSignal({ topic: sigMessage.ShowPopup,
+            data: { message: winner.playerName + ' wins!' + ' ' + winner.score } });
     }
     isGameComplete() {
         let result = true;
