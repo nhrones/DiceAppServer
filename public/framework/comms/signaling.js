@@ -5,9 +5,8 @@ import { DEBUG, SSEReadyState, SignalServer } from '../../constants.js';
 import * as Players from '../../model/players.js';
 import { game } from '../../model/diceGame.js';
 export let thisID = 'Player1';
-const host = window.location.host;
-console.log('host', host)
-const SignalServerURL = (host === '127.0.0.1:8000' || host === 'localhost:8000')
+const host = window.location.hostname;
+const SignalServerURL = (host === '127.0.0.1' || host === 'localhost')
     ? 'http://localhost:8000'
     : SignalServer;
 console.log('SignalServerURL', SignalServerURL);
@@ -18,7 +17,18 @@ export const initialize = (name, id) => {
         return;
     }
     window.addEventListener('beforeunload', () => {
-        disconnect();
+        if (sse.readyState === state.open) {
+            const sigMsg = JSON.stringify({
+                from: thisID,
+                event: 'close',
+                data: thisID + ' window was closed!',
+                id: 0
+            });
+            fetch(SignalServerURL, {
+                method: "POST",
+                body: sigMsg
+            });
+        }
     });
     sse = new EventSource(SignalServerURL + '/listen/' + id);
     sse.onopen = () => {

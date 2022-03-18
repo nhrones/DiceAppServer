@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Deno Run App Server",
+            "label": "Deno Run DiceApp Server",
             "type": "shell",
             "command": "deno",
             "options": {
