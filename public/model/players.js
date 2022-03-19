@@ -1,5 +1,5 @@
-import { sigMessage } from '../types.js';
-import { onSignalRecieved, sendSignal } from '../framework/comms/signaling.js';
+import { sigMessage } from '../framework/comms/SIGlib.js';
+import { onSignalRecieved, sendSSEmessage } from '../framework/comms/signaling.js';
 import { Event, Fire } from '../framework/model/events.js';
 import { DEBUG } from '../constants.js';
 const MAXPLAYERS = 2;
@@ -31,7 +31,7 @@ export const init = (thisgame, color) => {
         addPlayer(id, name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        sendSignal({ topic: sigMessage.UpdatePlayers, data: Array.from(players.values()) });
+        sendSSEmessage({ topic: sigMessage.UpdatePlayers, data: Array.from(players.values()) });
     });
     onSignalRecieved(sigMessage.UpdatePlayers, (playersArray) => {
         players.clear();

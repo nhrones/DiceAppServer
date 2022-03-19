@@ -1,5 +1,6 @@
-import { rtcMessage, sigMessage } from '../../types.js';
-import { dispatch, onSignalRecieved, sendSignal } from './signaling.js';
+import { ReadyState, rtcMessage } from './RTClib.js';
+import { sigMessage } from './SIGlib.js';
+import { dispatch, onSignalRecieved, sendSSEmessage } from './signaling.js';
 import { DEBUG } from '../../constants.js';
 import { Event, Fire } from '../model/events.js';
 import { players, removePlayer } from '../../model/players.js';
@@ -17,7 +18,7 @@ export const initialize = () => {
         createPeerConnection(false);
         await peerConnection.setRemoteDescription(offer);
         const answer = await peerConnection.createAnswer();
-        sendSignal({ topic: rtcMessage.RtcAnswer, data: { type: 'answer', sdp: answer.sdp } });
+        sendSSEmessage({ topic: rtcMessage.RtcAnswer, data: { type: 'answer', sdp: answer.sdp } });
         await peerConnection.setLocalDescription(answer);
     });
     onSignalRecieved(rtcMessage.RtcAnswer, async (answer) => {
@@ -59,7 +60,7 @@ export const initialize = () => {
     });
 };
 export const start = () => {
-    sendSignal({ topic: rtcMessage.invitation, data: {} });
+    sendSSEmessage({ topic: rtcMessage.invitation, data: {} });
 };
 const reset = (msg) => {
     dataChannel = null;
@@ -90,7 +91,7 @@ function createPeerConnection(isOfferer) {
             init.sdpMid = event.candidate.sdpMid;
             init.sdpMLineIndex = event.candidate.sdpMLineIndex;
         }
-        sendSignal({ topic: rtcMessage.candidate, data: init });
+        sendSSEmessage({ topic: rtcMessage.candidate, data: init });
     };
     if (isOfferer) {
         if (DEBUG)
@@ -137,7 +138,7 @@ function checkDataChannelState() {
 export async function makeConnection() {
     createPeerConnection(true);
     const offer = await peerConnection.createOffer();
-    sendSignal({ topic: rtcMessage.RtcOffer, data: { type: 'offer', sdp: offer.sdp } });
+    sendSSEmessage({ topic: rtcMessage.RtcOffer, data: { type: 'offer', sdp: offer.sdp } });
     await peerConnection.setLocalDescription(offer);
 }
 updateUI({ content: `Player1 is waiting for a connection from: ${location.origin}` });
@@ -145,9 +146,14 @@ function updateUI(msg) {
     if (DEBUG)
         console.log(msg.content);
 }
-export const ReadyState = {
-    closed: 'closed',
-    closing: 'closing',
-    connecting: 'connecting',
-    open: 'open',
+export const sendSignal = (msg) => {
+    if (dataChannel && dataChannel.readyState === 'open') {
+        const jsonMsg = JSON.stringify(msg);
+        if (DEBUG)
+            console.info('Sending to DataChannel >> :', jsonMsg);
+        dataChannel.send(jsonMsg);
+    }
+    else {
+        console.error('No place to send the message:', msg.topic);
+    }
 };
