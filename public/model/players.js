@@ -1,6 +1,6 @@
-import { onEvent, sendSSEmessage } from '../framework/comms/signaling.js';
-import { Event, Fire } from '../framework/model/events.js';
-import { DEBUG } from '../constants.js';
+import { onEvent, signal } from '../framework/comms/signaling.js';
+import { Event, Fire, when } from '../framework/model/events.js';
+import { LogLevel, debug } from '../constants.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -20,15 +20,29 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    onEvent('RegisterPlayer', (player) => {
+    when(Event.PeerDisconnected, () => {
+        removePlayer([...players][1].id);
+    });
+    onEvent('SetID', (data) => {
+        const { id, name } = data;
+        console.log("players::onEvent('SetID') - id: " + id + " name: " + name);
+        addPlayer(id, name);
+        thisPlayer.id = id;
+        thisPlayer.playerName = name;
+        setCurrentPlayer(thisPlayer);
+        if (game) {
+            game.resetGame();
+        }
+    });
+    onEvent('RegisterPeer', (player) => {
         console.log('playerid: ', player.id);
         const { id, name } = player;
-        if (DEBUG)
-            console.log(`Players.RegisterPlayer ${id}  ${name}`);
+        if (LogLevel >= debug)
+            console.log(`Players.RegisterPeer ${id}  ${name}`);
         addPlayer(id, name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        sendSSEmessage({ event: 'UpdatePlayers', data: Array.from(players.values()) });
+        signal({ event: 'UpdatePlayers', data: Array.from(players.values()) });
     });
     onEvent('UpdatePlayers', (playersArray) => {
         players.clear();
@@ -78,7 +92,7 @@ const updatePlayer = (index, color, text) => {
     });
 };
 export const addPlayer = (id, playerName) => {
-    if (DEBUG)
+    if (LogLevel >= debug)
         console.log('add player ', id + '  ' + playerName);
     if (playerName === 'Player') {
         const num = players.size + 1;
@@ -90,7 +104,7 @@ export const addPlayer = (id, playerName) => {
         players.add(thisPlayer);
     }
     else {
-        if (DEBUG)
+        if (LogLevel >= debug)
             console.log(`Players adding, id:${id} name: ${playerName}`);
         players.add({
             id: id,
@@ -101,14 +115,14 @@ export const addPlayer = (id, playerName) => {
             lastScore: ''
         });
     }
-    if (DEBUG)
+    if (LogLevel >= debug)
         console.info(' added player', Array.from(players.values()));
 };
 export const removePlayer = (id) => {
     const p = getById(id);
     if (p === null)
         return;
-    if (DEBUG)
+    if (LogLevel >= debug)
         console.info(' removing player', p);
     players.delete(p);
     refreshPlayerColors();
@@ -140,7 +154,7 @@ const refreshPlayerColors = () => {
 };
 const playerColors = ["Brown", "Green", "RoyalBlue", "Red"];
 export const setThisPlayer = (player) => {
-    if (DEBUG)
+    if (LogLevel >= debug)
         console.log(`Step-4 - Players.setThisPlayer: ${player.playerName}`);
     const favicon = document.getElementById("favicon");
     thisPlayer = player;
@@ -164,7 +178,7 @@ export let currentPlayer = {
     lastScore: ''
 };
 export const setCurrentPlayer = (player) => {
-    if (DEBUG)
+    if (LogLevel >= debug)
         console.log(`Step-5 - Players.settingCurrentPlayer: ${player.playerName}`);
     currentPlayer = player;
 };

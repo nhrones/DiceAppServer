@@ -1,8 +1,6 @@
 import { currentPlayer, thisPlayer } from '../../model/players.js';
-import * as events from '../model/events.js';
 import { container, ctx } from '../../view/container.js';
 import * as viewElements from './viewElements.js';
-const { Event: _, Fire: fireEvent, } = events;
 let x = 0;
 let y = 0;
 let boundingRect = null;

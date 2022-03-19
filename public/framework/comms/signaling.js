@@ -1,21 +1,20 @@
-import { SSE } from './SIGlib.js';
 import { Event, Fire } from '../model/events.js';
 import * as webRTC from './webRTC.js';
-import { DEBUG, SignalServer } from '../../constants.js';
-import * as Players from '../../model/players.js';
-import { game } from '../../model/diceGame.js';
-export let thisID = 'Player1';
+import { LogLevel, debug, error, SignalServerURL } from '../../constants.js';
+export let thisID = '';
+export let thisName = '';
 const host = window.location.hostname;
-const SignalServerURL = (host === '127.0.0.1' || host === 'localhost')
+const serviceURL = (host === '127.0.0.1' || host === 'localhost')
     ? 'http://localhost:8000'
-    : SignalServer;
-console.log('SignalServerURL', SignalServerURL);
+    : SignalServerURL;
+console.log('serviceURL', serviceURL);
 const subscriptions = new Map();
 export let sse;
-export const initialize = (name, id) => {
+export const initialize = (nam, id) => {
     if (sse) {
         return;
     }
+    thisName = nam;
     window.addEventListener('beforeunload', () => {
         if (sse.readyState === SSE.OPEN) {
             const sigMsg = JSON.stringify({
@@ -24,61 +23,42 @@ export const initialize = (name, id) => {
                 data: thisID + ' window was closed!',
                 id: 0
             });
-            fetch(SignalServerURL, {
+            fetch(serviceURL, {
                 method: "POST",
                 body: sigMsg
             });
         }
     });
-    sse = new EventSource(SignalServerURL + '/listen/' + id);
+    sse = new EventSource(serviceURL + '/listen/' + id);
     sse.onopen = () => {
-        if (DEBUG)
+        if (LogLevel >= debug)
             console.log('Sse.onOpen! >>>  webRTC.start()');
         webRTC.initialize();
     };
     sse.onerror = (err) => {
-        if (DEBUG)
+        if (LogLevel >= debug)
             console.error('sse.error!', err);
         Fire(Event.ShowPopup, { message: `Game Full! Please close tab!` });
     };
     sse.onmessage = (msg) => {
-        if (DEBUG)
-            console.log('>>>>>>>  signaler recieved  >>>>>>>>  ', msg.data);
+        if (LogLevel >= debug)
+            console.log('<<<<  signaler got  <<<<  ', msg.data);
         const msgObject = JSON.parse(msg.data);
-        if (DEBUG)
+        if (LogLevel >= debug)
             console.info('      parsed data = ', msgObject);
         const event = msgObject.event;
-        if (DEBUG)
+        if (LogLevel >= debug)
             console.info('               event: ', event);
         dispatch(event, msgObject.data);
     };
     sse.addEventListener('SetID', (ev) => {
         const msgObject = JSON.parse(ev.data);
         const { data } = msgObject;
-        dispatch(msgObject.event, msgObject.data);
-        console.log('on.SetID - data type = ' + (typeof data) + ' id ' + data.id);
         thisID = data.id;
-        Players.thisPlayer.id = data.id;
-        Players.thisPlayer.playerName = name;
-        console.info('Players.thisPlayer:', Players.thisPlayer);
-        Players.setThisPlayer(Players.thisPlayer);
-        Players.setCurrentPlayer(Players.thisPlayer);
-        registerPlayer(data.id, name);
-        Players.addPlayer(data.id, name);
+        console.log('signaler::on.SetID - data type = ' + (typeof data) + ' id ' + thisID);
+        dispatch('SetID', { id: thisID, name: thisName });
+        registerPeer(thisID, thisName);
         webRTC.start();
-        if (game) {
-            game.resetGame();
-        }
-    });
-    sse.addEventListener('GameIsFull', (ev) => {
-        const msg = `Sorry! This game is full!
-    Please close the tab/window! 
-    Try again in a minute or two!`;
-        if (DEBUG)
-            console.log(msg);
-        alert(msg);
-        self.opener = self;
-        self.close();
     });
 };
 export const getState = (msg) => {
@@ -93,14 +73,14 @@ export const disconnect = () => {
     sse.close();
     getState('Disconnecting streamedEvents!');
 };
-export const registerPlayer = (id, name) => {
+export const registerPeer = (id, name) => {
     const regObj = {
         from: id,
-        event: 'RegisterPlayer',
+        event: 'RegisterPeer',
         data: { id: id, name: name }
     };
     const msg = JSON.stringify(regObj);
-    fetch(SignalServerURL, {
+    fetch(serviceURL, {
         method: "POST",
         body: msg
     });
@@ -122,17 +102,24 @@ export const onEvent = (event, listener) => {
     const callbacks = subscriptions.get(event);
     callbacks.push(listener);
 };
-export const sendSSEmessage = (msg) => {
+export const signal = (msg) => {
     if (sse.readyState === SSE.OPEN) {
         const sigMsg = JSON.stringify({ from: thisID, event: msg.event, data: msg.data });
-        if (DEBUG)
-            console.log('Sending to sig-server >>> :', sigMsg);
-        fetch(SignalServerURL, {
+        if (LogLevel >= debug)
+            console.log('>>>>  sig-server  >>>> :', sigMsg);
+        fetch(serviceURL, {
             method: "POST",
             body: sigMsg
         });
     }
     else {
-        console.error('No place to send the message:', msg.event);
+        if (LogLevel >= error) {
+            console.error('No place to send the message:', msg.event);
+        }
     }
+};
+export const SSE = {
+    CONNECTING: 0,
+    OPEN: 1,
+    CLOSED: 2
 };
