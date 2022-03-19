@@ -1,29 +1,29 @@
-const topicSubscriptions = new Map();
-export const ON = (topic, callback) => {
-    return _registerListener(topic, callback);
+const eventSubscriptions = new Map();
+export const when = (event, callback) => {
+    return _registerListener(event, callback);
 };
-const _registerListener = (topic, callback) => {
-    if (!topicSubscriptions.has(topic)) {
-        topicSubscriptions.set(topic, []);
+const _registerListener = (event, callback) => {
+    if (!eventSubscriptions.has(event)) {
+        eventSubscriptions.set(event, []);
     }
-    const subscriptions = topicSubscriptions.get(topic);
+    const subscriptions = eventSubscriptions.get(event);
     const index = subscriptions.length;
     subscriptions.push(callback);
     return {
         remove: () => {
             delete subscriptions[index];
             if (subscriptions.length < 1) {
-                topicSubscriptions.delete(topic);
+                eventSubscriptions.delete(event);
             }
         }
     };
 };
-export const Fire = (topic, data) => {
-    if (topicSubscriptions.has(topic)) {
-        _dispatch(topicSubscriptions.get(topic), data);
+export const Fire = (event, data) => {
+    if (eventSubscriptions.has(event)) {
+        dispatch(eventSubscriptions.get(event), data);
     }
 };
-const _dispatch = (subscriptions, data) => {
+const dispatch = (subscriptions, data) => {
     if (subscriptions) {
         for (const callback of subscriptions) {
             callback((data != undefined) ? data : {});

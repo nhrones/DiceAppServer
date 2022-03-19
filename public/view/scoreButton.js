@@ -1,5 +1,5 @@
 import { container, ctx } from './container.js';
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 export default class ScoreButton {
     constructor(index, name, geometry, isLeftHanded, text) {
         this.id = 0;
@@ -29,7 +29,7 @@ export default class ScoreButton {
         this.isLeftHanded = isLeftHanded;
         this.upperText = text.split(' ')[0];
         this.lowerText = text.split(' ')[1] || '';
-        ON(Event.UpdateScoreElement + this.index, (data) => {
+        when(Event.UpdateScoreElement + this.index, (data) => {
             if (data.renderAll) {
                 this.color = data.color;
                 this.render();

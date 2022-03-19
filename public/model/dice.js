@@ -1,7 +1,6 @@
-import { sigMessage } from '../framework/comms/SIGlib.js';
-import { onSignalRecieved } from '../framework/comms/signaling.js';
+import { onEvent as onEvent } from '../framework/comms/signaling.js';
 import { sendSignal } from '../framework/comms/webRTC.js';
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as evaluator from './diceEvaluator.js';
 import { game } from './diceGame.js';
@@ -34,17 +33,17 @@ export const setfiveOfaKindCount = (val) => {
     fiveOfaKindCount = val;
 };
 export const init = () => {
-    ON(Event.DieTouched, (data) => {
+    when(Event.DieTouched, (data) => {
         const { index } = data;
         const thisDie = die[index];
         if (thisDie.value > 0) {
             thisDie.frozen = !thisDie.frozen;
             updateView(index, thisDie.value, thisDie.frozen);
             PlaySound.Select();
-            sendSignal({ topic: sigMessage.UpdateDie, data: { dieNumber: index } });
+            sendSignal({ event: 'UpdateDie', data: { dieNumber: index } });
         }
     });
-    onSignalRecieved(sigMessage.UpdateDie, (data) => {
+    onEvent('UpdateDie', (data) => {
         const targetDie = die[data.dieNumber];
         if (targetDie.value > 0) {
             targetDie.frozen = !targetDie.frozen;

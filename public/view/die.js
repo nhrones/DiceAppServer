@@ -1,4 +1,4 @@
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 import { ctx } from './container.js';
 export default class Die {
     constructor(index, name, geometry, path) {
@@ -18,7 +18,7 @@ export default class Die {
         this.color = 'transparent';
         this.path = path;
         this.render({ value: 0, frozen: false });
-        ON(Event.UpdateDie + this.index, (state) => {
+        when(Event.UpdateDie + this.index, (state) => {
             this.frozen = state.frozen;
             this.value = state.value;
             this.render(state);

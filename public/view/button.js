@@ -1,4 +1,4 @@
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 import { container, ctx } from './container.js';
 import Label from './label.js';
 export default class Button {
@@ -26,7 +26,7 @@ export default class Button {
         }, 'blue', true);
         this.path = path;
         this.render();
-        ON(Event.UpdateButton + this.name, (data) => {
+        when(Event.UpdateButton + this.name, (data) => {
             this.enabled = data.enabled;
             this.color = data.color;
             this.text = data.text;

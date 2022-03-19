@@ -1,7 +1,6 @@
-import { sigMessage } from '../framework/comms/SIGlib.js';
-import { onSignalRecieved } from '../framework/comms/signaling.js';
+import { onEvent } from '../framework/comms/signaling.js';
 import { sendSignal } from '../framework/comms/webRTC.js';
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 import * as Players from '../model/players.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as dice from './dice.js';
@@ -22,19 +21,19 @@ export class DiceGame {
         this.rightTotal = 0;
         dice.init();
         rollButton.init();
-        onSignalRecieved(sigMessage.ResetTurn, (_data) => {
+        onEvent('ResetTurn', (_data) => {
             if (!this.isGameComplete()) {
                 this.resetTurn();
             }
         });
-        onSignalRecieved(sigMessage.ResetGame, (data) => {
+        onEvent('ResetGame', (data) => {
             this.resetGame();
         });
-        ON(Event.PopupResetGame, () => {
-            sendSignal({ topic: sigMessage.ResetGame, data: {} });
+        when(Event.PopupResetGame, () => {
+            sendSignal({ event: 'ResetGame', data: {} });
             this.resetGame();
         });
-        ON(Event.ScoreElementResetTurn, () => {
+        when(Event.ScoreElementResetTurn, () => {
             if (this.isGameComplete()) {
                 this.clearPossibleScores();
                 this.setLeftScores();
@@ -45,7 +44,7 @@ export class DiceGame {
                 this.resetTurn();
             }
         });
-        ON(Event.ViewWasAdded, (view) => {
+        when(Event.ViewWasAdded, (view) => {
             if (view.type === 'ScoreButton') {
                 this.scoreItems.push(new ScoreElement(view.index, view.name));
             }
@@ -128,7 +127,7 @@ export class DiceGame {
         rollButton.update();
         Fire(Event.UpdateLabel + 'infolabel', { state: 0, color: 'snow', textColor: 'black', text: winMsg + ' ' + winner.score });
         Fire(Event.ShowPopup, { message: winMsg + ' ' + winner.score });
-        sendSignal({ topic: sigMessage.ShowPopup,
+        sendSignal({ event: 'ShowPopup',
             data: { message: winner.playerName + ' wins!' + ' ' + winner.score } });
     }
     isGameComplete() {

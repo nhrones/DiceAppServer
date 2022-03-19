@@ -1,4 +1,4 @@
-import { ON, Event } from '../framework/model/events.js';
+import { when, Event } from '../framework/model/events.js';
 import { LabelState } from '../types.js';
 import { container, ctx } from './container.js';
 export default class Label {
@@ -22,7 +22,7 @@ export default class Label {
         this.textLeft = this.geometry.left - (this.geometry.width * 0.5);
         this.textTop = this.geometry.top - (this.geometry.height * 0.7);
         if (bind) {
-            ON(Event.UpdateLabel + this.name, (data) => {
+            when(Event.UpdateLabel + this.name, (data) => {
                 this.fillColor = data.color;
                 this.fontColor = data.textColor;
                 if (data.state === LabelState.Reset) {

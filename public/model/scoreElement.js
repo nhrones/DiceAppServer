@@ -1,7 +1,6 @@
-import { sigMessage } from '../framework/comms/SIGlib.js';
-import { onSignalRecieved } from '../framework/comms/signaling.js';
+import { onEvent } from '../framework/comms/signaling.js';
 import { sendSignal } from '../framework/comms/webRTC.js';
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 import { currentPlayer, thisPlayer } from './players.js';
 import * as PlaySound from '../framework/model/sounds.js';
 import * as dice from './dice.js';
@@ -24,18 +23,17 @@ export default class ScoreElement {
         this.finalValue = 0;
         this.possibleValue = 0;
         this.scoringDieset = [0, 0, 0, 0, 0];
-        this.updateScoreMsg = 100 + this.index;
-        ON(`${Event.ScoreButtonTouched}${this.index}`, () => {
-            sendSignal({ topic: this.updateScoreMsg, data: "" });
+        when(Event.ScoreButtonTouched + this.index, () => {
+            sendSignal({ event: 'UpdateScore' + this.index, data: "" });
             if (this.clicked()) {
-                sendSignal({ topic: sigMessage.ResetTurn, data: "" });
+                sendSignal({ event: 'ResetTurn', data: "" });
                 Fire(Event.ScoreElementResetTurn, "");
             }
         });
-        onSignalRecieved(this.updateScoreMsg, () => {
+        onEvent('UpdateScore' + this.index, () => {
             this.clicked();
         });
-        ON(Event.UpdateTooltip + this.index, (data) => {
+        when(Event.UpdateTooltip + this.index, (data) => {
             let msg = '';
             let thisState = 0;
             if (data.hovered) {

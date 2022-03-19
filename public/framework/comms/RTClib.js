@@ -1,11 +1,3 @@
-export var rtcMessage;
-(function (rtcMessage) {
-    rtcMessage[rtcMessage["Bye"] = 11] = "Bye";
-    rtcMessage[rtcMessage["RtcOffer"] = 12] = "RtcOffer";
-    rtcMessage[rtcMessage["RtcAnswer"] = 13] = "RtcAnswer";
-    rtcMessage[rtcMessage["candidate"] = 14] = "candidate";
-    rtcMessage[rtcMessage["invitation"] = 15] = "invitation";
-})(rtcMessage || (rtcMessage = {}));
 export const ICEconfiguration = {
     iceServers: [{
             urls: [

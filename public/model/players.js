@@ -1,5 +1,4 @@
-import { sigMessage } from '../framework/comms/SIGlib.js';
-import { onSignalRecieved, sendSSEmessage } from '../framework/comms/signaling.js';
+import { onEvent, sendSSEmessage } from '../framework/comms/signaling.js';
 import { Event, Fire } from '../framework/model/events.js';
 import { DEBUG } from '../constants.js';
 const MAXPLAYERS = 2;
@@ -21,9 +20,7 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    onSignalRecieved(sigMessage.RegisterPlayer, (player) => {
-        if (DEBUG)
-            console.info('@@@@@@@@@@@@@@@@@@@@@@@Players Got RegisterPlayer: @@@@@@@@@@@@@@@@@', (typeof player));
+    onEvent('RegisterPlayer', (player) => {
         console.log('playerid: ', player.id);
         const { id, name } = player;
         if (DEBUG)
@@ -31,9 +28,9 @@ export const init = (thisgame, color) => {
         addPlayer(id, name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        sendSSEmessage({ topic: sigMessage.UpdatePlayers, data: Array.from(players.values()) });
+        sendSSEmessage({ event: 'UpdatePlayers', data: Array.from(players.values()) });
     });
-    onSignalRecieved(sigMessage.UpdatePlayers, (playersArray) => {
+    onEvent('UpdatePlayers', (playersArray) => {
         players.clear();
         resetScoreLabels();
         playersArray.forEach((newPlayer, index) => {
@@ -53,7 +50,7 @@ export const init = (thisgame, color) => {
         setCurrentPlayer([...players][0]);
         game.resetGame();
     });
-    onSignalRecieved(sigMessage.RemovePlayer, (id) => {
+    onEvent('RemovePlayer', (id) => {
         removePlayer(id);
         game.resetGame();
     });

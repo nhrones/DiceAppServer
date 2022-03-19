@@ -1,5 +1,4 @@
-import { rtcMessage } from './RTClib.js';
-import { sigMessage, SSE } from './SIGlib.js';
+import { SSE } from './SIGlib.js';
 import { Event, Fire } from '../model/events.js';
 import * as webRTC from './webRTC.js';
 import { DEBUG, SignalServer } from '../../constants.js';
@@ -48,16 +47,15 @@ export const initialize = (name, id) => {
         const msgObject = JSON.parse(msg.data);
         if (DEBUG)
             console.info('      parsed data = ', msgObject);
-        const topic = msgObject.topic;
-        let topicName = (topic > 10) ? rtcMessage[topic] : sigMessage[topic];
+        const event = msgObject.event;
         if (DEBUG)
-            console.info('               topic: ', topicName);
-        dispatch(topic, msgObject.data);
+            console.info('               event: ', event);
+        dispatch(event, msgObject.data);
     };
     sse.addEventListener('SetID', (ev) => {
         const msgObject = JSON.parse(ev.data);
         const { data } = msgObject;
-        dispatch(msgObject.topic, msgObject.data);
+        dispatch(msgObject.event, msgObject.data);
         console.log('on.SetID - data type = ' + (typeof data) + ' id ' + data.id);
         thisID = data.id;
         Players.thisPlayer.id = data.id;
@@ -98,19 +96,18 @@ export const disconnect = () => {
 export const registerPlayer = (id, name) => {
     const regObj = {
         from: id,
-        topic: sigMessage.RegisterPlayer,
+        event: 'RegisterPlayer',
         data: { id: id, name: name }
     };
     const msg = JSON.stringify(regObj);
-    console.log('Step-6 - POST registeringPlayer >>> ', msg);
     fetch(SignalServerURL, {
         method: "POST",
         body: msg
     });
 };
-export const dispatch = (topic, data) => {
-    if (subscriptions.has(topic)) {
-        const subs = subscriptions.get(topic);
+export const dispatch = (event, data) => {
+    if (subscriptions.has(event)) {
+        const subs = subscriptions.get(event);
         if (subs) {
             for (const callback of subs) {
                 callback(data != undefined ? data : {});
@@ -118,16 +115,16 @@ export const dispatch = (topic, data) => {
         }
     }
 };
-export const onSignalRecieved = (topic, listener) => {
-    if (!subscriptions.has(topic)) {
-        subscriptions.set(topic, []);
+export const onEvent = (event, listener) => {
+    if (!subscriptions.has(event)) {
+        subscriptions.set(event, []);
     }
-    const callbacks = subscriptions.get(topic);
+    const callbacks = subscriptions.get(event);
     callbacks.push(listener);
 };
 export const sendSSEmessage = (msg) => {
     if (sse.readyState === SSE.OPEN) {
-        const sigMsg = JSON.stringify({ from: thisID, topic: msg.topic, data: msg.data });
+        const sigMsg = JSON.stringify({ from: thisID, event: msg.event, data: msg.data });
         if (DEBUG)
             console.log('Sending to sig-server >>> :', sigMsg);
         fetch(SignalServerURL, {
@@ -136,6 +133,6 @@ export const sendSSEmessage = (msg) => {
         });
     }
     else {
-        console.error('No place to send the message:', msg.topic);
+        console.error('No place to send the message:', msg.event);
     }
 };

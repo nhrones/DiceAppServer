@@ -1,7 +1,6 @@
 import { container, ctx } from './container.js';
 import * as socket from '../framework/comms/signaling.js';
-import { sigMessage } from '../framework/comms/SIGlib.js';
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 let left = 1;
 let top = 1;
 export default class Popup {
@@ -25,13 +24,13 @@ export default class Popup {
         this.hiddenPath.rect(1, 1, 1, 1);
         this.geometry = geometry;
         this.path = this.hiddenPath;
-        ON(Event.ShowPopup, (data) => {
+        when(Event.ShowPopup, (data) => {
             this.show(data.message);
         });
-        socket.onSignalRecieved(sigMessage.ShowPopup, (data) => {
+        socket.onEvent('ShowPopup', (data) => {
             this.show(data.message);
         });
-        ON(Event.HidePopup, () => {
+        when(Event.HidePopup, () => {
             this.hide();
         });
     }

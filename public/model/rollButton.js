@@ -1,17 +1,16 @@
-import { sigMessage } from '../framework/comms/SIGlib.js';
-import { onSignalRecieved } from '../framework/comms/signaling.js';
+import { onEvent } from '../framework/comms/signaling.js';
 import { sendSignal } from '../framework/comms/webRTC.js';
-import { ON, Event, Fire } from '../framework/model/events.js';
+import { when, Event, Fire } from '../framework/model/events.js';
 import * as dice from './dice.js';
 const kind = 'rollbutton';
 export const state = { text: '', color: '', enabled: true };
 export const init = () => {
-    ON(`${Event.ButtonTouched}${kind}`, () => {
+    when(`${Event.ButtonTouched}${kind}`, () => {
         dice.roll(null);
-        sendSignal({ topic: sigMessage.UpdateRoll, data: dice.toString() });
+        sendSignal({ event: 'UpdateRoll', data: dice.toString() });
         updateRollState();
     });
-    onSignalRecieved(sigMessage.UpdateRoll, (diceArray) => {
+    onEvent('UpdateRoll', (diceArray) => {
         dice.roll(JSON.parse(diceArray));
         updateRollState();
     });
