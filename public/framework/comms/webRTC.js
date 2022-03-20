@@ -64,9 +64,9 @@ function reset(msg) {
     start();
     dispatch('ShowPopup', msg);
 }
-function createPeerConnection(isOfferer) {
+function createPeerConnection(isOfferor) {
     if (LogLevel >= debug)
-        console.log('Starting WebRTC as', isOfferer ? 'Offerer' : 'Offeree');
+        console.log('Starting WebRTC as', isOfferor ? 'Offeror' : 'Offeree');
     peerConnection = new RTCPeerConnection({
         iceServers: [{ urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"] }]
     });
@@ -83,9 +83,9 @@ function createPeerConnection(isOfferer) {
         }
         signal({ event: 'candidate', data: init });
     };
-    if (isOfferer) {
+    if (isOfferor) {
         if (LogLevel >= debug)
-            console.log('Offerer -> creating dataChannel!');
+            console.log('Offeror -> creating dataChannel!');
         dataChannel = peerConnection.createDataChannel('chat');
         setupDataChannel();
     }
