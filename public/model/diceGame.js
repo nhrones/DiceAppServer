@@ -126,9 +126,9 @@ export class DiceGame {
         rollButton.state.text = winMsg;
         rollButton.update();
         Fire(Event.UpdateLabel + 'infolabel', { state: 0, color: 'snow', textColor: 'black', text: winMsg + ' ' + winner.score });
-        Fire(Event.ShowPopup, { message: winMsg + ' ' + winner.score });
+        Fire(Event.ShowPopup, winMsg + ' ' + winner.score);
         sendSignal({ event: 'ShowPopup',
-            data: { message: winner.playerName + ' wins!' + ' ' + winner.score } });
+            data: winner.playerName + ' wins!' + ' ' + winner.score });
     }
     isGameComplete() {
         let result = true;

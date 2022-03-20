@@ -1,6 +1,5 @@
 import { dispatch, onEvent, signal } from './signaling.js';
 import { LogLevel, debug } from '../../constants.js';
-import { Event, Fire } from '../model/events.js';
 export let peerConnection;
 export let dataChannel;
 export let RTCopen = false;
@@ -63,7 +62,7 @@ function reset(msg) {
     dataChannel = null;
     peerConnection = null;
     start();
-    Fire(Event.ShowPopup, { message: msg });
+    dispatch('ShowPopup', msg);
 }
 function createPeerConnection(isOfferer) {
     if (LogLevel >= debug)
@@ -121,7 +120,7 @@ function checkDataChannelState() {
     else if (dataChannel.readyState === ReadyState.closed) {
         if (RTCopen === true) {
             RTCopen = false;
-            Fire(Event.PeerDisconnected, '');
+            dispatch('PeerDisconnected', 'Peer has disconnected!');
             reset('Peer has disconnected!');
         }
     }

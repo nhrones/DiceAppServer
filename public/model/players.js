@@ -1,5 +1,5 @@
 import { onEvent, signal } from '../framework/comms/signaling.js';
-import { Event, Fire, when } from '../framework/model/events.js';
+import { Event, Fire } from '../framework/model/events.js';
 import { LogLevel, debug } from '../constants.js';
 const MAXPLAYERS = 2;
 let game;
@@ -20,7 +20,7 @@ export const init = (thisgame, color) => {
         score: 0,
         lastScore: ''
     };
-    when(Event.PeerDisconnected, () => {
+    onEvent('PeerDisconnected', () => {
         removePlayer([...players][1].id);
     });
     onEvent('SetID', (data) => {
@@ -42,9 +42,9 @@ export const init = (thisgame, color) => {
         addPlayer(id, name);
         setCurrentPlayer([...players][0]);
         game.resetGame();
-        signal({ event: 'UpdatePlayers', data: Array.from(players.values()) });
+        signal({ event: 'UpdatePeers', data: Array.from(players.values()) });
     });
-    onEvent('UpdatePlayers', (playersArray) => {
+    onEvent('UpdatePeers', (playersArray) => {
         players.clear();
         resetScoreLabels();
         playersArray.forEach((newPlayer, index) => {
@@ -64,7 +64,7 @@ export const init = (thisgame, color) => {
         setCurrentPlayer([...players][0]);
         game.resetGame();
     });
-    onEvent('RemovePlayer', (id) => {
+    onEvent('RemovePeer', (id) => {
         removePlayer(id);
         game.resetGame();
     });

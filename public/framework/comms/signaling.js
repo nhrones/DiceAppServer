@@ -1,4 +1,3 @@
-import { Event, Fire } from '../model/events.js';
 import * as webRTC from './webRTC.js';
 import { LogLevel, debug, error, SignalServerURL } from '../../constants.js';
 export let thisID = '';
@@ -38,7 +37,7 @@ export const initialize = (nam, id) => {
     sse.onerror = (err) => {
         if (LogLevel >= debug)
             console.error('sse.error!', err);
-        Fire(Event.ShowPopup, { message: `Game Full! Please close tab!` });
+        dispatch('ShowPopup', `Seats Full! Please close tab!`);
     };
     sse.onmessage = (msg) => {
         if (LogLevel >= debug)
