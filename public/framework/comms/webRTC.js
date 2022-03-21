@@ -1,12 +1,12 @@
 import { dispatch, onEvent, signal } from './signaling.js';
-import { LogLevel, debug } from '../../constants.js';
+import { LogLevel, info, debug } from '../../constants.js';
 export let peerConnection;
 export let dataChannel;
 export let RTCopen = false;
 export const initialize = () => {
     onEvent('RtcOffer', async (offer) => {
         if (peerConnection) {
-            if (LogLevel >= debug)
+            if (LogLevel >= info)
                 console.error('existing peerconnection');
             return;
         }
