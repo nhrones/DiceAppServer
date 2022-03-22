@@ -5,7 +5,6 @@ import { contentType } from './path.ts'
 
 async function handleRequest(request: Request): Promise<Response> {
     let { pathname } = new URL(request.url);
-    if (DEBUG) console.log('serving: ', pathname)
     if (pathname.endsWith("/")) { pathname += "index.html" }
     try { // we expect all file requests to be from /public/
         const body = await Deno.readFile("./public" + pathname)
