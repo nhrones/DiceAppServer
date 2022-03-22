@@ -1,24 +1,26 @@
+import { callee, caller, setCaller } from './peers.js';
 import { dispatch, onEvent, signal } from './signaling.js';
-import { LogLevel, info, debug } from '../../constants.js';
+const DEBUG = true;
 export let peerConnection;
 export let dataChannel;
 export let RTCopen = false;
 export const initialize = () => {
-    onEvent('RtcOffer', async (offer) => {
+    onEvent('RtcOffer', async (data) => {
+        setCaller(data.from);
         if (peerConnection) {
-            if (LogLevel >= info)
+            if (DEBUG)
                 console.error('existing peerconnection');
             return;
         }
         createPeerConnection(false);
-        await peerConnection.setRemoteDescription(offer);
+        await peerConnection.setRemoteDescription(data.data);
         const answer = await peerConnection.createAnswer();
         signal({ event: 'RtcAnswer', data: { type: 'answer', sdp: answer.sdp } });
         await peerConnection.setLocalDescription(answer);
     });
     onEvent('RtcAnswer', async (answer) => {
         if (!peerConnection) {
-            if (LogLevel >= debug)
+            if (DEBUG)
                 console.error('no peerconnection');
             return;
         }
@@ -26,10 +28,11 @@ export const initialize = () => {
     });
     onEvent('candidate', async (candidate) => {
         if (!peerConnection) {
-            if (LogLevel >= debug)
+            if (DEBUG)
                 console.error('no peerconnection');
             return;
         }
+        console.log('handling candidate!');
         if (!candidate.candidate) {
             await peerConnection.addIceCandidate(null);
         }
@@ -37,26 +40,28 @@ export const initialize = () => {
             await peerConnection.addIceCandidate(candidate);
         }
     });
-    onEvent('Bye', () => {
+    onEvent('close', () => {
         if (peerConnection) {
             peerConnection.close();
             peerConnection = null;
         }
     });
-    onEvent('invitation', (_data) => {
+    onEvent('invitation', (data) => {
         if (peerConnection) {
-            if (LogLevel >= debug)
+            if (DEBUG)
                 console.log(`Already connected, ignoring this 'invitation'!`);
             return;
         }
-        if (LogLevel >= debug)
-            console.log(`A peer has sent me a 'invitation'!  I'll make a  WebRTC-connection!`);
+        setCaller(data);
+        if (DEBUG)
+            console.log(`A peer named ${data.name} has sent me an 'invitation'!  I'll make a  WebRTC-connection!`);
         makeConnection();
     });
-    dispatch('UpdateUI', `Waiting for a connection from: ${location.origin}`);
+    dispatch('UpdateUI', `⌛  ${callee.name} is waiting for a connection\n from: ${location.origin}`);
 };
 export const start = () => {
-    signal({ event: 'invitation', data: {} });
+    console.info('inviting from start - callee:', callee);
+    signal({ event: 'invitation', data: callee });
 };
 function reset(msg) {
     dataChannel = null;
@@ -65,7 +70,7 @@ function reset(msg) {
     dispatch('ShowPopup', msg);
 }
 function createPeerConnection(isOfferor) {
-    if (LogLevel >= debug)
+    if (DEBUG)
         console.log('Starting WebRTC as', isOfferor ? 'Offeror' : 'Offeree');
     peerConnection = new RTCPeerConnection({
         iceServers: [{ urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"] }]
@@ -84,14 +89,14 @@ function createPeerConnection(isOfferor) {
         signal({ event: 'candidate', data: init });
     };
     if (isOfferor) {
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.log('Offeror -> creating dataChannel!');
         dataChannel = peerConnection.createDataChannel('chat');
         setupDataChannel();
     }
     else {
         peerConnection.ondatachannel = (event) => {
-            if (LogLevel >= debug)
+            if (DEBUG)
                 console.log('peerConnection.ondatachannel -> creating dataChannel!');
             dataChannel = event.channel;
             setupDataChannel();
@@ -99,13 +104,12 @@ function createPeerConnection(isOfferor) {
     }
 }
 function setupDataChannel() {
-    checkDataChannelState();
     dataChannel.onopen = checkDataChannelState;
     dataChannel.onclose = checkDataChannelState;
     dataChannel.onmessage = (ev) => {
         const msg = JSON.parse(ev.data);
         const { event, data } = msg;
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.info('<<<<  DataChannel got  <<<<  ', event);
         dispatch(event, data);
     };
@@ -114,32 +118,33 @@ function checkDataChannelState() {
     if (dataChannel.readyState === ReadyState.open) {
         if (RTCopen === false) {
             RTCopen = true;
-            dispatch('UpdateUI', `Peer1 is now connected to Peer2`);
+            console.info('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&caller:', caller);
+            dispatch('UpdateUI', `${callee.name} is now connected to ${caller.name}`);
         }
     }
     else if (dataChannel.readyState === ReadyState.closed) {
         if (RTCopen === true) {
             RTCopen = false;
-            dispatch('PeerDisconnected', 'Peer has disconnected!');
-            reset('Peer has disconnected!');
+            dispatch('PeerDisconnected', `${caller.name} has disconnected!`);
+            reset(`${caller.name} has disconnected!`);
         }
     }
 }
 export async function makeConnection() {
     createPeerConnection(true);
     const offer = await peerConnection.createOffer();
-    signal({ event: 'RtcOffer', data: { type: 'offer', sdp: offer.sdp } });
+    signal({ event: 'RtcOffer', data: { from: callee, data: { type: 'offer', sdp: offer.sdp } } });
     await peerConnection.setLocalDescription(offer);
 }
 export const sendSignal = (msg) => {
     if (dataChannel && dataChannel.readyState === 'open') {
         const jsonMsg = JSON.stringify(msg);
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.info('>>>>  DataChannel  >>>> :', jsonMsg);
         dataChannel.send(jsonMsg);
     }
     else {
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.log('No place to send the message:', msg.event);
     }
 };

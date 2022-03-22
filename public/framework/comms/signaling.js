@@ -1,25 +1,25 @@
+import { initPeers, Emoji, callee, registerPeer } from './peers.js';
 import * as webRTC from './webRTC.js';
-import { LogLevel, debug, error, SignalServerURL } from '../../constants.js';
-export let thisID = '';
-export let thisName = '';
+const DEBUG = true;
 const host = window.location.hostname;
-const serviceURL = (host === '127.0.0.1' || host === 'localhost')
+const SignalServerURL = 'https://rtc-signal-server.deno.dev';
+export const serviceURL = (host === '127.0.0.1' || host === 'localhost')
     ? 'http://localhost:8000'
     : SignalServerURL;
 console.log('serviceURL', serviceURL);
 const subscriptions = new Map();
 export let sse;
-export const initialize = (nam, id) => {
+export const initialize = (name, id, emoji = Emoji[0]) => {
     if (sse) {
         return;
     }
-    thisName = nam;
+    initPeers(id, name);
     window.addEventListener('beforeunload', () => {
         if (sse.readyState === SSE.OPEN) {
             const sigMsg = JSON.stringify({
-                from: thisID,
+                from: callee.id,
                 event: 'close',
-                data: thisID + ' window was closed!',
+                data: callee.id + ' window was closed!',
                 id: 0
             });
             fetch(serviceURL, {
@@ -30,33 +30,31 @@ export const initialize = (nam, id) => {
     });
     sse = new EventSource(serviceURL + '/listen/' + id);
     sse.onopen = () => {
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.log('Sse.onOpen! >>>  webRTC.start()');
         webRTC.initialize();
     };
     sse.onerror = (err) => {
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.error('sse.error!', err);
         dispatch('ShowPopup', `Seats Full! Please close tab!`);
     };
     sse.onmessage = (msg) => {
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.log('<<<<  signaler got  <<<<  ', msg.data);
         const msgObject = JSON.parse(msg.data);
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.info('      parsed data = ', msgObject);
         const event = msgObject.event;
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.info('               event: ', event);
         dispatch(event, msgObject.data);
     };
     sse.addEventListener('SetID', (ev) => {
         const msgObject = JSON.parse(ev.data);
         const { data } = msgObject;
-        thisID = data.id;
-        console.log('signaler::on.SetID - data type = ' + (typeof data) + ' id ' + thisID);
-        dispatch('SetID', { id: thisID, name: thisName });
-        registerPeer(thisID, thisName);
+        registerPeer(data.id, callee.name);
+        dispatch('SetID', { id: data.id, name: callee.name });
         webRTC.start();
     });
 };
@@ -71,18 +69,6 @@ export const getState = (msg) => {
 export const disconnect = () => {
     sse.close();
     getState('Disconnecting streamedEvents!');
-};
-export const registerPeer = (id, name) => {
-    const regObj = {
-        from: id,
-        event: 'RegisterPeer',
-        data: { id: id, name: name }
-    };
-    const msg = JSON.stringify(regObj);
-    fetch(serviceURL, {
-        method: "POST",
-        body: msg
-    });
 };
 export const dispatch = (event, data) => {
     if (subscriptions.has(event)) {
@@ -103,8 +89,8 @@ export const onEvent = (event, listener) => {
 };
 export const signal = (msg) => {
     if (sse.readyState === SSE.OPEN) {
-        const sigMsg = JSON.stringify({ from: thisID, event: msg.event, data: msg.data });
-        if (LogLevel >= debug)
+        const sigMsg = JSON.stringify({ from: callee.id, event: msg.event, data: msg.data });
+        if (DEBUG)
             console.log('>>>>  sig-server  >>>> :', sigMsg);
         fetch(serviceURL, {
             method: "POST",
@@ -112,7 +98,7 @@ export const signal = (msg) => {
         });
     }
     else {
-        if (LogLevel >= error) {
+        if (DEBUG) {
             console.error('No place to send the message:', msg.event);
         }
     }
