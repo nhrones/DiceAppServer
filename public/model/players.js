@@ -1,6 +1,6 @@
 import { onEvent, signal } from '../framework/comms/signaling.js';
 import { Event, Fire } from '../framework/model/events.js';
-import { LogLevel, debug } from '../constants.js';
+import { DEBUG } from '../constants.js';
 const MAXPLAYERS = 2;
 let game;
 let thisColor = 'snow';
@@ -37,7 +37,7 @@ export const init = (thisgame, color) => {
     onEvent('RegisterPeer', (player) => {
         console.log('playerid: ', player.id);
         const { id, name } = player;
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.log(`Players.RegisterPeer ${id}  ${name}`);
         addPlayer(id, name);
         setCurrentPlayer([...players][0]);
@@ -92,7 +92,7 @@ const updatePlayer = (index, color, text) => {
     });
 };
 export const addPlayer = (id, playerName) => {
-    if (LogLevel >= debug)
+    if (DEBUG)
         console.log('add player ', id + '  ' + playerName);
     if (playerName === 'Player') {
         const num = players.size + 1;
@@ -104,7 +104,7 @@ export const addPlayer = (id, playerName) => {
         players.add(thisPlayer);
     }
     else {
-        if (LogLevel >= debug)
+        if (DEBUG)
             console.log(`Players adding, id:${id} name: ${playerName}`);
         players.add({
             id: id,
@@ -115,14 +115,14 @@ export const addPlayer = (id, playerName) => {
             lastScore: ''
         });
     }
-    if (LogLevel >= debug)
+    if (DEBUG)
         console.info(' added player', Array.from(players.values()));
 };
 export const removePlayer = (id) => {
     const p = getById(id);
     if (p === null)
         return;
-    if (LogLevel >= debug)
+    if (DEBUG)
         console.info(' removing player', p);
     players.delete(p);
     refreshPlayerColors();
@@ -154,7 +154,7 @@ const refreshPlayerColors = () => {
 };
 const playerColors = ["Brown", "Green", "RoyalBlue", "Red"];
 export const setThisPlayer = (player) => {
-    if (LogLevel >= debug)
+    if (DEBUG)
         console.log(`Step-4 - Players.setThisPlayer: ${player.playerName}`);
     const favicon = document.getElementById("favicon");
     thisPlayer = player;
@@ -178,7 +178,7 @@ export let currentPlayer = {
     lastScore: ''
 };
 export const setCurrentPlayer = (player) => {
-    if (LogLevel >= debug)
+    if (DEBUG)
         console.log(`Step-5 - Players.settingCurrentPlayer: ${player.playerName}`);
     currentPlayer = player;
 };
