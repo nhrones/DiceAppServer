@@ -14,7 +14,9 @@ export const initialize = (name, id, emoji = Emoji[0]) => {
         return;
     }
     initPeers(id, name);
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('beforeunload', (ev) => {
+        ev.preventDefault();
+        ev.returnValue = 'Are you sure you want to Quit?';
         if (sse.readyState === SSE.OPEN) {
             const sigMsg = JSON.stringify({
                 from: callee.id,
