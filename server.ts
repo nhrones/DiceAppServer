@@ -1,5 +1,5 @@
 
-import { serve } from "https://deno.land/std@0.129.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.139.0/http/server.ts";
 import { DEBUG, host, port } from './constants.ts'
 import { contentType } from './path.ts'
 
